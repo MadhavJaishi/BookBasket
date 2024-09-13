@@ -1,0 +1,21 @@
+const express = require('express')
+const app = express()
+require("./conn/conn.js")
+require("dotenv").config()
+const cors = require("cors")
+app.use(cors())
+app.use(express.json())
+const User = require("./routes/user.js")
+const Books = require("./routes/book.js")
+const Favourites = require("./routes/favourites.js")
+const Cart = require("./routes/cart.js")
+const Order = require("./routes/order.js")
+app.use("/api/v1", User)
+app.use("/api/v1", Books)
+app.use("/api/v1", Favourites)
+app.use("/api/v1", Cart)
+app.use("/api/v1", Order)
+
+app.listen(process.env.PORT, () => {
+    console.log(`Server created on the port ${process.env.PORT} successfully`);
+})
