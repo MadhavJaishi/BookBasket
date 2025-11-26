@@ -5,7 +5,7 @@ import { AiFillDelete } from "react-icons/ai";
 import { useNavigate } from 'react-router-dom';
 
 const Cart = () => {
-  const naviagate = useNavigate();
+  const navigate = useNavigate();
   const [Cart, setCart] = useState([]);
   const [Total, setTotal] = useState(0);
   const headers = {
@@ -14,13 +14,13 @@ const Cart = () => {
   }
   useEffect(() => { 
     const fetch = async () => {
-        const resp = await axios.get(`http://localhost:5000/api/v1/get-user-cart`, {headers})
+        const resp = await axios.get(`https://thereadingroom-bookstore.onrender.com/api/v1/get-user-cart`, {headers})
         setCart(resp.data.data)
     }
     fetch();
   }, [Cart])
   const deleteItem = async (bookid) => {
-    const response = await axios.put(`http://localhost:5000/api/v1/remove-book-from-cart/${bookid}`, {}, {headers})
+    const response = await axios.put(`https://thereadingroom-bookstore.onrender.com/api/v1/remove-book-from-cart/${bookid}`, {}, {headers})
     alert(response.data.msg);
   }
   useEffect(() => {
@@ -35,7 +35,7 @@ const Cart = () => {
   }, [Cart])
   const PlaceOrder = async () => {
     try {
-      const response = await axios.post(`http://localhost:5000/api/v1/place-order`, {order: Cart}, {headers});
+      const response = await axios.post(`https://thereadingroom-bookstore.onrender.com/api/v1/place-order`, {order: Cart}, {headers});
       alert(response.data.msg);
       navigate("/profile/orderHistory");
     }
@@ -44,7 +44,7 @@ const Cart = () => {
     }
   }
   return (
-    <div className='bg-zinc-900 px-12 h-screen'>
+    <div className='bg-zinc-900 px-12 h-auto min-h-screen'>
       {!Cart && <div className='w-full h-[100%] flex items-center justify-center'><Loader /></div>}
 
       {Cart && Cart.length === 0 && (

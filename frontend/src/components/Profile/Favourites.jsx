@@ -10,7 +10,7 @@ const Favourites = () => {
   }
   useEffect(() => {
     const fetch = async () => {
-      const response = await axios.get("http://localhost:5000/api/v1/get-all-favourites", { headers });
+      const response = await axios.get("https://thereadingroom-bookstore.onrender.com/api/v1/get-all-favourites", { headers });
       setFavouriteBooks(response.data.data);
     }
     fetch();
@@ -18,7 +18,7 @@ const Favourites = () => {
   return (
     <>
       {FavouriteBooks.length === 0 && <div className='text-5xl font-semibold h-[100%] text-zinc-400 w-full flex items-center justify-center'>No favourite books</div>}
-      <div className='grid grid-cols-4 gap-4'>
+      <div className='w-full md:grid grid-cols-4 gap-4'>
         {FavouriteBooks && FavouriteBooks.map((items, i) => <div key={i}><BookCard data={items} favourite={true}  /></div>)}
       </div>
     </>

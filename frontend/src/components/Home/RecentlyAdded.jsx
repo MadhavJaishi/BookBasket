@@ -7,14 +7,14 @@ const RecentlyAdded = () => {
   const [BookItems, setBookItems] = useState()
   useEffect(() => { 
     const fetch = async () => {
-        const resp = await axios.get("http://localhost:5000/api/v1/get-recent-books")
+        const resp = await axios.get("https://thereadingroom-bookstore.onrender.com/api/v1/get-recent-books")
         setBookItems(resp.data.data)
     }
     fetch();
   }, [])
   return (
     <div className='mt-8 px-4'>
-        <h4 className='text-3xl text-red-100'>Recently Added Books</h4>
+        <h4 className='text-3xl text-red-100'>Our Recommendation Books</h4>
         {!BookItems && <div className='flex items-center justify-center my-8'>
             <Loader />
           </div>}

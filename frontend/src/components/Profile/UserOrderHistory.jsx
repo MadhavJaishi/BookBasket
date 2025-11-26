@@ -12,7 +12,7 @@ const UserOrderHistory = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const resp = await axios.get("http://localhost:5000/api/v1/get-order-history", {headers});
+        const resp = await axios.get("https://thereadingroom-bookstore.onrender.com/api/v1/get-order-history", {headers});
         console.log(resp);
         setOrderHistory(resp.data.data);
       } catch (error) {

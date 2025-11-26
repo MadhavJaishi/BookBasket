@@ -14,8 +14,8 @@ const Hero = () => {
             </div>
         </div>
 
-        <div className='w-full lg:w-3/6 h-auto lg:h-[100%] flex items-center justify-center'>
-            <img src="./HomePageImage.png" alt="image" />
+        <div className='mt-4 w-full lg:w-3/6 lg:h-[80%] flex items-center justify-center'>
+            <img src="./sellBooks.png" alt="image" className="h-50 lg:h-75" />
         </div>
     </div>
   )

@@ -6,17 +6,18 @@ import { FaHeart } from "react-icons/fa";
 import { FaShoppingCart } from "react-icons/fa"; 
 import { FaEdit } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
-import { useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux';
 
 const BookDetails = () => {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [Data, setData] = useState({})
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const role = useSelector((state) => state.auth.role);
   useEffect(() => { 
     const fetch = async () => {
-        const resp = await axios.get(`http://localhost:5000/api/v1/get-book-details/${id}`)
+        const resp = await axios.get(`https://thereadingroom-bookstore.onrender.com/api/v1/get-book-details/${id}`)
         // console.log(resp)
         setData(resp.data.data)
     }
@@ -28,12 +29,20 @@ const BookDetails = () => {
     bookid: id,
   }
   const addToFavourite = async () => {
-    const response = await axios.put("http://localhost:5000/api/v1/add-book-to-favourites", {}, { headers });
+    const response = await axios.put("https://thereadingroom-bookstore.onrender.com/api/v1/add-book-to-favourites", {}, { headers });
     alert(response.data.msg);
   }
   const addToCart = async () => {
-    const response = await axios.put("http://localhost:5000/api/v1/add-book-to-cart", {}, { headers });
+    const response = await axios.put("https://thereadingroom-bookstore.onrender.com/api/v1/add-book-to-cart", {}, { headers });
     alert(response.data.msg);
+  }
+  const editBook = () => {
+
+  }
+  const deleteBook = async () => {
+    const response = await axios.delete("https://thereadingroom-bookstore.onrender.com/api/v1/delete-book", { headers });
+    alert(response.data.msg);
+    navigate("/all-books");
   }
   return ( 
   <>
@@ -57,11 +66,11 @@ const BookDetails = () => {
               {" "}
               {isLoggedIn === true && role === "admin" && 
               <div className='flex flex-col md:flex-row  lg:flex-col items-center justify-between lg:justify-start mt-8 lg:mt-0'>
-                <button onClick={editBook} className='bg-white rounded lg:rounded-full text-4xl lg:text-3xl p-3 flex items-center justify-center'>
+                <Link to={`/update-book/${id}`} onClick={editBook} className='bg-white rounded lg:rounded-full text-4xl lg:text-3xl p-3 flex items-center justify-center'>
                 <FaEdit /> {" "} <span className='ms-4 block lg:hidden'>Edit book</span>
-                </button>
+                </Link>
                 <button onClick={deleteBook} className='text-red-500 rounded lg:rounded-full text-4xl lg:text-3xl p-3 mt-8 md:mt-0 lg:mt-8 bg-white flex items-center justify-center'>
-                <MdDeleteOutline /> {" "} <span className='ms-4 block lg:hidde n'>Delete book</span>
+                <MdDeleteOutline /> {" "} <span className='ms-4 block lg:hidden'>Delete book</span>
                 </button>
               </div>}
             </div>

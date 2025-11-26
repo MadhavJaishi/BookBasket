@@ -13,7 +13,7 @@ const Settings = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const resp = await axios.get("http://localhost:5000/api/v1/get-user-info", {headers});
+        const resp = await axios.get("https://thereadingroom-bookstore.onrender.com/api/v1/get-user-info", {headers});
         console.log(resp);
         setProfileData(resp.data);
         setValue({address: resp.data.address});
@@ -28,7 +28,7 @@ const Settings = () => {
     setValue({...Value, [name]: value});
   }
   const submitAddress = async () => {
-    const response = await axios.put("http://localhost:5000/api/v1/update-address", Value, {headers});
+    const response = await axios.put("https://thereadingroom-bookstore.onrender.com/api/v1/update-address", Value, {headers});
     alert(response.data.msg);
   }
   return (

@@ -69,10 +69,10 @@ router.get("/get-all-orders", authenticateToken, async (req, res) => {
 
 // update order status by admin
 router.put("/update-status/:id", authenticateToken, async (req, res) => {
-    const { id } = req.params;
     const { userid } = req.headers;
-    const role = await User.findById(userid).role;
-    if (role != "admin") return res.status(401).json({msg: "Unauthorized access!!"});
+    const { id } = req.params;
+    const user = await User.findById(userid);
+    if (user.role != "admin") return res.status(401).json({msg: "Unauthorized access!!"});
     await Order.findByIdAndUpdate(id, { status: req.body.status })
     return res.status(200).json({
         status: "Success",

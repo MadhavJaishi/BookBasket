@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+# TheReadingRoom-BookStore
+Built using MERN stack with user authentication and admin interface.
+=======
 # Backend
 // Server Creation Setup
 -> npm init -y
@@ -27,3 +31,4 @@
 
 
 
+>>>>>>> 4f42d32 (push-app-to-github)

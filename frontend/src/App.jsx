@@ -14,7 +14,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import auth, { authActions } from "./store/auth"
 import Favourites from './components/Profile/Favourites'
 import UserOrderHistory from './components/Profile/UserOrderHistory'
+import AllOrders from './components/Profile/AllOrders'
+import AddBook from './components/Profile/AddBook'
 import Settings from './components/Profile/Settings'
+import UpdateBook from './pages/UpdateBook'
 
 const App = () => {
   const dispatch = useDispatch();
@@ -34,12 +37,14 @@ const App = () => {
         <Route path="/login" element={<LogIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<Profile />} >
-          <Route index element={<Favourites />}/>
+          {role === "user" ? <Route index element={<Favourites />}/> : <Route index element={<AllOrders />}/>}
           <Route path="/profile/orderHistory" element={<UserOrderHistory />}/>
+          {role === "admin" && <Route path="/profile/add-book" element={<AddBook />}/>}
           <Route path="/profile/settings" element={<Settings />}/>
         </Route>
         <Route path="/cart" element={<Cart />} />
         <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/update-book/:id" element={<UpdateBook />} />
         <Route path="/view-book-details/:id" element={<BookDetails />}/>
       </Routes>
       <Footer />
