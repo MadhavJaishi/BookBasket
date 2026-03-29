@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
-import { Link } from "react-router-dom";
 
 const Settings = () => {
   const [Value, setValue] = useState({ address: "" });
@@ -13,7 +12,7 @@ const Settings = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const resp = await axios.get("${process.env.BASE_URL}/get-user-info", {
+        const resp = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/get-user-info`, {
           headers,
         });
         setProfileData(resp.data);
@@ -33,7 +32,7 @@ const Settings = () => {
   };
   const submitAddress = async () => {
     const response = await axios.put(
-      "${process.env.BASE_URL}/update-address",
+      `${process.env.REACT_APP_BACKEND_URL}/update-address`,
       Value,
       { headers },
     );
@@ -53,26 +52,27 @@ const Settings = () => {
           </h1>
           <div className="flex flex-col md:flex-row gap-12">
             <div className="flex flex-col w-full md:w-1/2">
-              <label htmlFor="">Username</label>
-              <p className="p-2 rounded bg-zinc-800 mt-2 font-semibold">
+              <label htmlFor="username">Username</label>
+              <p id="username" className="p-2 rounded bg-zinc-800 mt-2 font-semibold">
                 {ProfileData.username}
               </p>
             </div>
             <div className="flex flex-col w-full md:w-1/2">
-              <label htmlFor="">Email</label>
-              <p className="p-2 rounded bg-zinc-800 mt-2 font-semibold">
+              <label htmlFor="email">Email</label>
+              <p id="email" className="p-2 rounded bg-zinc-800 mt-2 font-semibold">
                 {ProfileData.email}
               </p>
             </div>
           </div>
           <div className="mt-8">
-            <label htmlFor="">Address</label>
+            <label htmlFor="address">Address</label>
             <textarea
               onChange={changeArea}
               className="p-2 w-full rounded bg-zinc-800 mt-2 font-semibold"
               rows="5"
               placeholder="Address"
               name="address"
+              id="address"
               value={Value.address}
             />
           </div>

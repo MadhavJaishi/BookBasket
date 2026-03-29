@@ -13,7 +13,7 @@ const UserOrderHistory = () => {
     const fetch = async () => {
       try {
         const resp = await axios.get(
-          "${process.env.BASE_URL}/get-order-history",
+          `${process.env.REACT_APP_BACKEND_URL}/get-order-history`,
           { headers },
         );
         setOrderHistory(resp.data.data);

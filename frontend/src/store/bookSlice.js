@@ -1,7 +1,9 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
+
 const fetchBooks = createAsyncThunk("books/fetchBooks", async ({ headers }) => {
   try {
-    const response = await fetch(`${process.env.BASE_URL}/get-all-books`, {
+    const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/get-all-books`, {
       headers,
     });
     const data = await response.json();
@@ -12,7 +14,7 @@ const fetchBooks = createAsyncThunk("books/fetchBooks", async ({ headers }) => {
 });
 
 const BooksSlice = createSlice({
-  name: "books",
+  name: "bookList",
   initialState: {
     books: [],
     loading: false,
@@ -29,8 +31,8 @@ const BooksSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchBooks.rejected, (state, action) => {
-        state.loading = false;
         state.error = action.error.message;
+        state.loading = false;
       });
   },
 });

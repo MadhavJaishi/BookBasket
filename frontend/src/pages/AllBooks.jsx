@@ -1,35 +1,24 @@
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import Loader from "../components/Loader/Loader";
 import BookCard from "../components/BookCard/BookCard";
 
 const AllBooks = () => {
-  const [originalBookItems, setOriginalBookItems] = useState([]); // Keep the original data
-  const [filteredBookItems, setFilteredBookItems] = useState([]); // Display filtered data
-  const [loading, setLoading] = useState(true); // Loader state
+  const originalBookItems = useSelector((state) => state.bookList.books) || [];
+  const [filteredBookItems, setFilteredBookItems] = useState([]); 
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetch = async () => {
-      try {
-        const resp = await axios.get("${process.env.BASE_URL}/get-all-books");
-        setOriginalBookItems(resp.data.data); // Store the original list of books
-        setFilteredBookItems(resp.data.data); // Initially show all books
-        setLoading(false); // Turn off loading
-      } catch (error) {
-        console.error("Failed to fetch books", error);
-        setLoading(false); // Turn off loading in case of an error
-      }
-    };
-    fetch();
-  }, []);
+      setFilteredBookItems(originalBookItems);
+      setLoading(false);
+  }, [originalBookItems]);
 
-  // Handle input change and filter books based on input text
+
   const change = (e) => {
     const { value } = e.target;
     filterData(value);
   };
 
-  // Filter books based on title, author, desc, and genre
   const filterData = (text) => {
     const lowercasedText = text.toLowerCase();
     const filtered = originalBookItems.filter(
@@ -39,19 +28,19 @@ const AllBooks = () => {
         book.desc.toLowerCase().includes(lowercasedText) ||
         book.genre.toLowerCase().includes(lowercasedText),
     );
-    setFilteredBookItems(filtered); // Update the filtered book list
+    setFilteredBookItems(filtered); 
   };
 
   return (
     <div className="bg-zinc-900 h-auto min-h-screen px-12 py-8">
-      <div className="flex justify-between">
+      <div className="flex flex-row flex-wrap gap-2 justify-between">
         <h4 className="text-xl md:text-3xl text-red-100">All Books</h4>
         <div className="">
           <input
             type="text"
             placeholder="Filter books by title, author, etc..."
             onChange={change}
-            className="px-0 py-1 sm:px-10 sm:py-3 rounded"
+            className="px-0 py-1 sm:px-6 sm:py-1 rounded-lg bg-zinc-300"
           />
         </div>
       </div>

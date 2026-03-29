@@ -14,19 +14,19 @@ const SeeUserData = ({ UserDivData, UserDiv, setUserDiv }) => {
                     <button onClick={() => setUserDiv("hidden")}><RxCross1 /></button>
                 </div>
                 <div className='mt-2'>
-                    <label htmlFor="">
+                    <label htmlFor="username">
                         Username :{" "} 
                         <span className='font-semibold'>{UserDivData.username}</span>
                     </label>
                 </div>
                 <div className='mt-4'>
-                    <label htmlFor="">
+                    <label htmlFor="email">
                         Email :{" "} 
                         <span className='font-semibold'>{UserDivData.email}</span>
                     </label>
                 </div>
                 <div className='mt-4'>
-                    <label htmlFor="">
+                    <label htmlFor="address">
                         Address :{" "} 
                         <span className='font-semibold'>{UserDivData.address}</span>
                     </label>

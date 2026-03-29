@@ -15,7 +15,7 @@ const Profile = () => {
   const [Profile, setProfile] = useState({});
   useEffect(() => {
     const fetch = async () => {
-      const resp = await axios.get("${process.env.BASE_URL}/get-user-info", {
+      const resp = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/get-user-info`, {
         headers,
       });
       setProfile(resp.data);

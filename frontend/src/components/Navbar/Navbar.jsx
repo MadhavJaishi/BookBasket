@@ -47,12 +47,12 @@ const Navbar = () => {
         <nav className='relative flex bg-zinc-800 text-white px-8 py-2 items-center justify-between z-50'>
             <Link to="/" className='flex items-center'>
                 <img className='h-10 me-4' src="https://img.icons8.com/?size=100&id=jfFu3i8zJXfN&format=png&color=000000" alt="logo" />
-                <h1 className='text-2xl font-semibold'>TheReadingRoom</h1>
+                <h1 className='text-2xl font-semibold'>BookBasket</h1>
             </Link>
             <div className='nav-links-readingroom block md:flex items-center gap-4'>
                 <div className='hidden md:flex gap-4'>
                     {links.map((items) => ( 
-                        <div className='flex items-center'> {
+                        <div key={items.link} className='flex items-center'> {
                             items.title === "Profile" || items.title === "Admin Profile" ? 
                             <Link to={items.link} className='px-4 py-1 border rounded border-blue-500 hover:bg-white hover:text-zinc-800 transition-all duration-300' key={items.title}>
                                     {items.title}
@@ -66,8 +66,8 @@ const Navbar = () => {
                 </div>
                 {isLoggedIn === false && (
                     <div className='hidden md:flex gap-4'>
-                    <Link to="/login" className='px-4 py-1 border rounded-full border-blue-500 hover:bg-white hover:text-zinc-800 transition-all duration-300'>LogIn</Link>
-                    <Link to="/signup" className='px-4 py-1 bg-blue-500 rounded-md hover:bg-white hover:text-zinc-800 transition-all duration-300'>SignUp</Link>
+                    <Link to="/login" className='px-4 py-1 border-2 rounded-full border-emerald-800 bg-emerald-600 hover:bg-emerald-800 transition-all duration-300'>LogIn</Link>
+                    <Link to="/signup" className='px-4 py-1 bg-emerald-600 rounded-md hover:bg-emerald-800 transition-all duration-300'>SignUp</Link>
                 </div>
                 )}
                 <button className='block md:hidden text-white text-2xl hover:text-zinc-400' onClick={() => (MobileNav === "hidden" ? setMobileNav("block") : setMobileNav("hidden"))}>
@@ -82,7 +82,7 @@ const Navbar = () => {
             {isLoggedIn === false && (
                 <>
                     <Link to="/login" className={`${MobileNav} px-8 py-2 mb-8 text-3xl font-semibold border rounded-full border-blue-500 text-white hover:bg-white hover:text-zinc-800 transition-all duration-300`}>LogIn</Link>
-                    <Link to="/signup" className={`${MobileNav} px-8 py-2 mb-8 text-3xl font-semibold bg-blue-500 rounded-md text-white hover:bg-white hover:text-zinc-800 transition-all duration-300`}>SignUp</Link>
+                    <Link to="/signup" className={`${MobileNav} px-8 py-2 mb-8 text-3xl font-semibold bg-emerald-600 rounded-md text-white hover:bg-white hover:text-zinc-800 transition-all duration-300`}>SignUp</Link>
                 </>
             )}
         </div>

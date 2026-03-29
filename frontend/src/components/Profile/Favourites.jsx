@@ -11,7 +11,7 @@ const Favourites = () => {
   useEffect(() => {
     const fetch = async () => {
       const response = await axios.get(
-        "${process.env.BASE_URL}/get-all-favourites",
+        `${process.env.REACT_APP_BACKEND_URL}/get-all-favourites`,
         { headers },
       );
       setFavouriteBooks(response.data.data);

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -25,7 +25,7 @@ const SignUp = () => {
         alert("All fields are required");
       } else {
         const response = await axios.post(
-          "${process.env.BASE_URL}/sign-up",
+          `${process.env.REACT_APP_BACKEND_URL}/sign-up`,
           Values,
           {
             headers: {
@@ -49,7 +49,7 @@ const SignUp = () => {
         <p className="text-rose-400 font-bold text-2xl mb-6">Sign Up</p>
         <div className={inputContainer}>
           <div>
-            <label htmlFor="" className={inputLabelColor}>
+            <label htmlFor="username" className={inputLabelColor}>
               Username
             </label>
             <input
@@ -57,13 +57,14 @@ const SignUp = () => {
               className={inputStyle}
               placeholder="e.g. Rahul"
               name="username"
+              id="username"
               required
               value={Values.username}
               onChange={change}
             />
           </div>
           <div className={inputContainer}>
-            <label htmlFor="" className={inputLabelColor}>
+            <label htmlFor="email" className={inputLabelColor}>
               Email
             </label>
             <input
@@ -71,13 +72,14 @@ const SignUp = () => {
               className={inputStyle}
               placeholder="xyz@gmail.com"
               name="email"
+              id="email"
               required
               value={Values.email}
               onChange={change}
             />
           </div>
           <div className={inputContainer}>
-            <label htmlFor="" className={inputLabelColor}>
+            <label htmlFor="password" className={inputLabelColor}>
               Password
             </label>
             <input
@@ -85,21 +87,23 @@ const SignUp = () => {
               className={inputStyle}
               placeholder="***"
               name="password"
+              id="password"
               required
               value={Values.password}
               onChange={change}
             />
           </div>
           <div className={inputContainer}>
-            <label htmlFor="" className={inputLabelColor}>
+            <label htmlFor="address" className={inputLabelColor}>
               Address
             </label>
             <textarea
               type="text"
               className={inputStyle}
-              rows="5"
+              rows="2"
               placeholder="Give your full address"
               name="address"
+              id="address"
               required
               value={Values.address}
               onChange={change}
@@ -107,7 +111,7 @@ const SignUp = () => {
           </div>
           <div className={inputContainer}>
             <button
-              className="w-full bg-blue-500 text-white font-semibold py-2 rounded hover:bg-white hover:text-zinc-800 transition-all duration-300"
+              className="w-full bg-emerald-600 text-white font-semibold py-2 rounded hover:bg-emerald-700 transition-all duration-300"
               onClick={submit}
             >
               Sign Up
@@ -115,7 +119,7 @@ const SignUp = () => {
           </div>
           <p className="flex mt-4 items-center justify-center text-white font-semibold">
             Already have and account? &nbsp;
-            <Link to="/login" className="text-blue-500 hover:text-zinc-300">
+            <Link to="/login" className="text-emerald-400 hover:text-emerald-600">
               <u>LogIn</u>
             </Link>
           </p>

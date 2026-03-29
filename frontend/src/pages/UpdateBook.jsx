@@ -29,7 +29,7 @@ const UpdateBook = () => {
         alert("All fields are required");
       } else {
         const response = await axios.put(
-          "${process.env.BASE_URL}/update-book",
+          `${process.env.REACT_APP_BACKEND_URL}/update-book`,
           Data,
           { headers },
         );
@@ -43,7 +43,7 @@ const UpdateBook = () => {
   useEffect(() => {
     const fetch = async () => {
       const resp = await axios.get(
-        `${process.env.BASE_URL}/get-book-details/${id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/get-book-details/${id}`,
       );
       setData(resp.data.data);
     };
@@ -56,7 +56,7 @@ const UpdateBook = () => {
       </h1>
       <div className="p-4 bg-zinc-800 rounded">
         <div>
-          <label htmlFor="" className="text-zinc-400">
+          <label htmlFor="url" className="text-zinc-400">
             Image
           </label>
           <input
@@ -64,13 +64,14 @@ const UpdateBook = () => {
             className="w-full mt-2 bg-zinc-900 text-zinc-100 p-2 outline-none"
             placeholder="url of image"
             name="url"
+            id="url"
             required
             value={Data.url}
             onChange={change}
           />
         </div>
         <div className="mt-4">
-          <label htmlFor="" className="text-zinc-400">
+          <label htmlFor="title" className="text-zinc-400">
             Title of book
           </label>
           <input
@@ -78,13 +79,14 @@ const UpdateBook = () => {
             className="w-full mt-2 bg-zinc-900 text-zinc-100 p-2 outline-none"
             placeholder="title of book"
             name="title"
+            id="title"
             required
             value={Data.title}
             onChange={change}
           />
         </div>
         <div className="mt-4">
-          <label htmlFor="" className="text-zinc-400">
+          <label htmlFor="author" className="text-zinc-400">
             Author of book
           </label>
           <input
@@ -92,13 +94,14 @@ const UpdateBook = () => {
             className="w-full mt-2 bg-zinc-900 text-zinc-100 p-2 outline-none"
             placeholder="author of book"
             name="author"
+            id="author"
             required
             value={Data.author}
             onChange={change}
           />
         </div>
         <div className="mt-4">
-          <label htmlFor="" className="text-zinc-400">
+          <label htmlFor="genre" className="text-zinc-400">
             Genre of book
           </label>
           <input
@@ -106,6 +109,7 @@ const UpdateBook = () => {
             className="w-full mt-2 bg-zinc-900 text-zinc-100 p-2 outline-none"
             placeholder="genre of book"
             name="genre"
+            id="genre"
             required
             value={Data.genre}
             onChange={change}
@@ -113,7 +117,7 @@ const UpdateBook = () => {
         </div>
         <div className="mt-4 flex gap-4">
           <div className="w-3/6">
-            <label htmlFor="" className="text-zinc-400">
+            <label htmlFor="language" className="text-zinc-400">
               Language
             </label>
             <input
@@ -121,13 +125,14 @@ const UpdateBook = () => {
               className="w-full mt-2 bg-zinc-900 text-zinc-100 p-2 outline-none"
               placeholder="language of book"
               name="language"
+              id="language"
               required
               value={Data.language}
               onChange={change}
             />
           </div>
           <div className="w-3/6">
-            <label htmlFor="" className="text-zinc-400">
+            <label htmlFor="price" className="text-zinc-400">
               Price
             </label>
             <input
@@ -135,6 +140,7 @@ const UpdateBook = () => {
               className="w-full mt-2 bg-zinc-900 text-zinc-100 p-2 outline-none"
               placeholder="price of book"
               name="price"
+              id="price"
               required
               value={Data.price}
               onChange={change}
@@ -142,7 +148,7 @@ const UpdateBook = () => {
           </div>
         </div>
         <div className="mt-4">
-          <label htmlFor="" className="text-zinc-400">
+          <label htmlFor="desc" className="text-zinc-400">
             Description of book
           </label>
           <textarea
@@ -151,6 +157,7 @@ const UpdateBook = () => {
             rows="5"
             placeholder="description of book"
             name="desc"
+            id="desc"
             required
             value={Data.desc}
             onChange={change}

@@ -9,7 +9,7 @@ const BookCard = ({ data, favourite }) => {
   };
   const removeFromFavourites = async () => {
     const response = await axios.put(
-      "${process.env.BASE_URL}/remove-book-from-favourites",
+      `${process.env.REACT_APP_BACKEND_URL}/remove-book-from-favourites`,
       {},
       { headers },
     );

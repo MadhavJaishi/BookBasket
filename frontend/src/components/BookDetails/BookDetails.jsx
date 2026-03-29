@@ -7,56 +7,76 @@ import { FaShoppingCart } from "react-icons/fa";
 import { FaEdit } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector,useDispatch } from "react-redux";
+import { fetchBooks } from '../../store/bookSlice';
 
 const BookDetails = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { id } = useParams();
-  const [Data, setData] = useState({});
+  const [Data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const role = useSelector((state) => state.auth.role);
-  useEffect(() => {
-    const fetch = async () => {
-      const resp = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/api/v1/get-book-details/${id}`,
-      );
-      setData(resp.data.data);
-    };
-    fetch();
-  }, []);
   const headers = {
     id: localStorage.getItem("id"),
     authorization: `Bearer ${localStorage.getItem("token")}`,
     bookid: id,
   };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const resp = await axios.get(
+          `${process.env.REACT_APP_BACKEND_URL}/get-book-details/${id}`
+        );
+        setData(resp.data.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
+  
   const addToFavourite = async () => {
     const response = await axios.put(
-      `${process.env.REACT_APP_BACKEND_URL}/api/v1/add-book-to-favourites`,
+      `${process.env.REACT_APP_BACKEND_URL}/add-book-to-favourites`,
       {},
       { headers },
     );
     alert(response.data.msg);
   };
+
   const addToCart = async () => {
     const response = await axios.put(
-      `${process.env.REACT_APP_BACKEND_URL}/api/v1/add-book-to-cart`,
+      `${process.env.REACT_APP_BACKEND_URL}/add-book-to-cart`,
       {},
       { headers },
     );
     alert(response.data.msg);
   };
-  const editBook = () => {};
+
   const deleteBook = async () => {
     const response = await axios.delete(
-      `${process.env.REACT_APP_BACKEND_URL}/api/v1/delete-book`,
+      `${process.env.REACT_APP_BACKEND_URL}/delete-book`,
       { headers },
     );
     alert(response.data.msg);
+    dispatch(fetchBooks())
     navigate("/all-books");
   };
+
+  if (loading) {
+    return (
+      <div className="h-screen bg-zinc-800 flex items-center justify-center">
+        <Loader />
+      </div>
+    );
+  }
   return (
     <>
-      {Data && (
+      (
         <div className="px-4 md:px-12 py-8 bg-zinc-800 flex flex-col md:flex-row gap-8 items-start">
           <div className="w-full lg:w-3/6">
             {" "}
@@ -119,12 +139,7 @@ const BookDetails = () => {
             </p>
           </div>
         </div>
-      )}
-      {!Data && (
-        <div className="h-screen bg-zinc-800 flex items-center justify-center">
-          <Loader />{" "}
-        </div>
-      )}
+      )
     </>
   );
 };

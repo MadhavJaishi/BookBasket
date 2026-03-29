@@ -18,6 +18,7 @@ import AllOrders from './components/Profile/AllOrders'
 import AddBook from './components/Profile/AddBook'
 import Settings from './components/Profile/Settings'
 import UpdateBook from './pages/UpdateBook'
+import { fetchBooks } from './store/bookSlice'
 
 const App = () => {
   const dispatch = useDispatch();
@@ -26,8 +27,9 @@ const App = () => {
     if (localStorage.getItem("id") && localStorage.getItem("token") && localStorage.getItem("role")) {
       dispatch(authActions.login());
       dispatch(authActions.changeRole(localStorage.getItem("role")));
+      dispatch(fetchBooks());
     }
-  })
+  }, [dispatch]);
   return (
     <div>
       <Navbar />

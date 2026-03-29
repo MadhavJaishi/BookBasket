@@ -110,7 +110,7 @@ npm install
 npm start
 
 Your app will run at:
-👉 ${process.env.BASE_URL}
+👉 ${process.env.REACT_APP_BACKEND_URL}
 
 📦 MERN Features Breakdown
 Backend APIs Include

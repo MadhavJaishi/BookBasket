@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { authActions } from "../store/auth";
 import { useDispatch } from "react-redux";
@@ -17,35 +17,42 @@ const LogIn = () => {
     const { name, value } = e.target;
     setValues({ ...Values, [name]: value });
   };
-  const submit = async () => {
-    try {
-      if (Values.username === "" || Values.password === "") {
-        alert("All fields are required");
-      } else {
-        const response = await axios.post(
-          "${process.env.BASE_URL}/sign-in",
-          Values,
-        );
-        dispatch(authActions.login());
-        dispatch(authActions.changeRole(response.data.role));
-        const data = response.data;
-        localStorage.setItem("id", data.id);
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("role", data.role);
-        alert("Login Successful");
-        navigate("/profile");
-      }
-    } catch (error) {
+ const submit = async () => {
+  try {
+    if (Values.username === "" || Values.password === "") {
+      alert("All fields are required");
+      return;
+    }a
+    const api_url = `${import.meta.env.VITE_BACKEND_URL}/sign-in`;
+
+    const response = await axios.post(api_url, Values);
+
+    dispatch(authActions.login());
+    dispatch(authActions.changeRole(response.data.role));
+
+    const data = response.data;
+    localStorage.setItem("id", data.id);
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("role", data.role);
+
+    alert("Login Successful");
+    navigate("/profile");
+
+  } catch (error) {
+    if (error.response) {
       alert(error.response.data.msg);
+    } else {
+      alert("Server not reachable");
     }
-  };
+  }
+};
   return (
-    <div className="h-screen bg-zinc-900 px-12 py-8 flex items-center justify-center">
-      <div className="bg-zinc-800 rounded-lg px-8 py-5 w-full md:w-3/6 lg:w-2/6">
-        <p className="text-zinc-200 text-xl">LogIn</p>
+    <div className=" h-auto bg-zinc-900 px-12 py-4 flex items-center justify-center round-xl">
+      <div className="bg-zinc-800 rounded-lg px-4 py-5 w-full md:w-4/6 lg:w-3/6">
+        <p className="text-rose-400 font-bold text-2xl mb-5">LogIn</p>
         <div className="mt-4">
           <div>
-            <label htmlFor="" className="text-zinc-400">
+            <label htmlFor="username" className="text-zinc-400">
               Username
             </label>
             <input
@@ -53,13 +60,14 @@ const LogIn = () => {
               className="w-full mt-2 bg-zinc-900 text-zinc-100 p-2 outline-none"
               placeholder="username"
               name="username"
+              id="username"
               required
               value={Values.username}
               onChange={change}
             />
           </div>
           <div className="mt-4">
-            <label htmlFor="" className="text-zinc-400">
+            <label htmlFor="password" className="text-zinc-400">
               Password
             </label>
             <input
@@ -67,6 +75,7 @@ const LogIn = () => {
               className="w-full mt-2 bg-zinc-900 text-zinc-100 p-2 outline-none"
               placeholder="password"
               name="password"
+              id="password"
               required
               value={Values.password}
               onChange={change}
@@ -74,7 +83,7 @@ const LogIn = () => {
           </div>
           <div className="mt-4">
             <button
-              className="w-full bg-blue-500 text-white font-semibold py-2 rounded hover:bg-white hover:text-zinc-800 transition-all duration-300"
+              className="w-full bg-emerald-600 text-white font-semibold py-2 rounded hover:bg-emerald-700  transition-all duration-300"
               onClick={submit}
             >
               LogIn
@@ -85,7 +94,7 @@ const LogIn = () => {
           </p>
           <p className="flex mt-4 items-center justify-center text-zinc-300 font-semibold">
             Don't have and account? &nbsp;
-            <Link to="/signup" className="hover:text-blue-500">
+            <Link to="/signup" className="hover:text-emerald-400">
               <u>SignUp</u>
             </Link>
           </p>

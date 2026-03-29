@@ -14,7 +14,7 @@ const Cart = () => {
   };
   useEffect(() => {
     const fetch = async () => {
-      const resp = await axios.get(`${process.env.BASE_URL}/get-user-cart`, {
+      const resp = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/get-user-cart`, {
         headers,
       });
       setCart(resp.data.data);
@@ -23,7 +23,7 @@ const Cart = () => {
   }, [Cart]);
   const deleteItem = async (bookid) => {
     const response = await axios.put(
-      `${process.env.BASE_URL}/remove-book-from-cart/${bookid}`,
+      `${process.env.REACT_APP_BACKEND_URL}/remove-book-from-cart/${bookid}`,
       {},
       { headers },
     );
@@ -42,7 +42,7 @@ const Cart = () => {
   const PlaceOrder = async () => {
     try {
       const response = await axios.post(
-        `${process.env.BASE_URL}/place-order`,
+        `${process.env.REACT_APP_BACKEND_URL}/place-order`,
         { order: Cart },
         { headers },
       );
