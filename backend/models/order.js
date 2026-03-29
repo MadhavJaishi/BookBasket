@@ -1,12 +1,12 @@
-const mongoose = require("mongoose")
+import { Schema, Types, model } from "mongoose"
 
-const order = new mongoose.Schema({
+const order = new Schema({
     user: {
-        type: mongoose.Types.ObjectId,
+        type: Types.ObjectId,
         ref: "user",
     },
     book: {
-        type: mongoose.Types.ObjectId,
+        type: Types.ObjectId,
         ref: "books",
     },
     status: {
@@ -15,4 +15,4 @@ const order = new mongoose.Schema({
         enum: ["Order placed", "Out for delivery", "Delivered", "Cancelled"]
     }
 }, {timestamps: true})
-module.exports = mongoose.model("order", order)
+export default model("order", order)

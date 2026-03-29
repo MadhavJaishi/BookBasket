@@ -110,7 +110,7 @@ npm install
 npm start
 
 Your app will run at:
-👉 http://localhost:3000
+👉 ${process.env.BASE_URL}
 
 📦 MERN Features Breakdown
 Backend APIs Include
