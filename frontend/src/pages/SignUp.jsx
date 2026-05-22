@@ -9,11 +9,14 @@ const SignUp = () => {
     password: "",
     address: "",
   });
+
   const navigate = useNavigate();
+
   const change = (e) => {
     const { name, value } = e.target;
     setValues({ ...Values, [name]: value });
   };
+
   const submit = async () => {
     try {
       if (
@@ -24,8 +27,8 @@ const SignUp = () => {
       ) {
         alert("All fields are required");
       } else {
-        const response = await axios.post(
-          `${process.env.REACT_APP_BACKEND_URL}/sign-up`,
+        await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/sign-up`,
           Values,
           {
             headers: {
@@ -33,97 +36,119 @@ const SignUp = () => {
             },
           },
         );
+
         navigate("/login");
       }
     } catch (error) {
-      alert(error.response.data.msg);
+      alert(error.response?.data?.msg || "Something went wrong");
     }
   };
+
   const inputStyle =
-    "w-full mt-1 bg-zinc-900 text-sm text-zinc-100 p-2 outline-none rounded-md";
-  const inputLabelColor = "text-white";
-  const inputContainer = "mt-2";
+    "w-full mt-2 bg-zinc-900/80 border border-zinc-700 focus:border-emerald-500 text-zinc-100 text-sm px-4 py-3 outline-none rounded-xl transition-all duration-300 placeholder:text-zinc-500";
+
   return (
-    <div className="h-auto bg-zinc-900 px-12 py-4 flex items-center justify-center round-xl">
-      <div className="bg-zinc-800 rounded-lg px-4 py-5 w-full md:w-4/6 lg:w-3/6">
-        <p className="text-rose-400 font-bold text-2xl mb-6">Sign Up</p>
-        <div className={inputContainer}>
-          <div>
-            <label htmlFor="username" className={inputLabelColor}>
-              Username
-            </label>
-            <input
-              type="text"
-              className={inputStyle}
-              placeholder="e.g. Rahul"
-              name="username"
-              id="username"
-              required
-              value={Values.username}
-              onChange={change}
-            />
-          </div>
-          <div className={inputContainer}>
-            <label htmlFor="email" className={inputLabelColor}>
-              Email
-            </label>
-            <input
-              type="text"
-              className={inputStyle}
-              placeholder="xyz@gmail.com"
-              name="email"
-              id="email"
-              required
-              value={Values.email}
-              onChange={change}
-            />
-          </div>
-          <div className={inputContainer}>
-            <label htmlFor="password" className={inputLabelColor}>
-              Password
-            </label>
-            <input
-              type="text"
-              className={inputStyle}
-              placeholder="***"
-              name="password"
-              id="password"
-              required
-              value={Values.password}
-              onChange={change}
-            />
-          </div>
-          <div className={inputContainer}>
-            <label htmlFor="address" className={inputLabelColor}>
-              Address
-            </label>
-            <textarea
-              type="text"
-              className={inputStyle}
-              rows="2"
-              placeholder="Give your full address"
-              name="address"
-              id="address"
-              required
-              value={Values.address}
-              onChange={change}
-            />
-          </div>
-          <div className={inputContainer}>
-            <button
-              className="w-full bg-emerald-600 text-white font-semibold py-2 rounded hover:bg-emerald-700 transition-all duration-300"
-              onClick={submit}
-            >
-              Sign Up
-            </button>
-          </div>
-          <p className="flex mt-4 items-center justify-center text-white font-semibold">
-            Already have and account? &nbsp;
-            <Link to="/login" className="text-emerald-400 hover:text-emerald-600">
-              <u>LogIn</u>
-            </Link>
+    <div className="min-h-screen bg-zinc-900 flex items-center justify-center px-4 py-10">
+      <div className="w-full max-w-md bg-zinc-800 border border-zinc-700 rounded-3xl shadow-2xl p-8">
+        {/* Heading */}
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-rose-400">Create Account</h1>
+          <p className="text-zinc-400 text-sm mt-2">
+            Join BookBasket and explore your next favorite book.
           </p>
         </div>
+
+        {/* Username */}
+        <div className="mb-5">
+          <label
+            htmlFor="username"
+            className="text-sm font-medium text-zinc-300"
+          >
+            Username
+          </label>
+          <input
+            type="text"
+            className={inputStyle}
+            placeholder="e.g. Rahul"
+            name="username"
+            id="username"
+            value={Values.username}
+            onChange={change}
+          />
+        </div>
+
+        {/* Email */}
+        <div className="mb-5">
+          <label htmlFor="email" className="text-sm font-medium text-zinc-300">
+            Email Address
+          </label>
+          <input
+            type="email"
+            className={inputStyle}
+            placeholder="xyz@gmail.com"
+            name="email"
+            id="email"
+            value={Values.email}
+            onChange={change}
+          />
+        </div>
+
+        {/* Password */}
+        <div className="mb-5">
+          <label
+            htmlFor="password"
+            className="text-sm font-medium text-zinc-300"
+          >
+            Password
+          </label>
+          <input
+            type="password"
+            className={inputStyle}
+            placeholder="Enter your password"
+            name="password"
+            id="password"
+            value={Values.password}
+            onChange={change}
+          />
+        </div>
+
+        {/* Address */}
+        <div className="mb-6">
+          <label
+            htmlFor="address"
+            className="text-sm font-medium text-zinc-300"
+          >
+            Address
+          </label>
+          <textarea
+            className={`${inputStyle} resize-none`}
+            rows="3"
+            placeholder="Enter your full address"
+            name="address"
+            id="address"
+            value={Values.address}
+            onChange={change}
+          />
+        </div>
+
+        {/* Button */}
+        <button
+          className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl transition-all duration-300 shadow-lg shadow-emerald-900/30"
+          onClick={submit}
+        >
+          Create Account
+        </button>
+
+        {/* Footer */}
+        <p className="mt-6 text-center text-sm text-zinc-400">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-emerald-400 hover:text-emerald-300 font-medium transition-all duration-300"
+          >
+            Log In
+          </Link>
+        </p>
       </div>
     </div>
   );

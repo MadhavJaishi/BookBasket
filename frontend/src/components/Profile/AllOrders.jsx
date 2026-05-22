@@ -34,7 +34,7 @@ const AllOrders = () => {
   const submitChanges = async (i) => {
     const id = AllOrders[i]._id;
     const response = await axios.put(
-      `${process.env.REACT_APP_BACKEND_URL}/update-status/${id}`,
+      `${import.meta.env.VITE_BACKEND_URL}/update-status/${id}`,
       Values,
       { headers },
     );

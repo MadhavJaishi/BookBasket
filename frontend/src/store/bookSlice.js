@@ -1,17 +1,23 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const fetchBooks = createAsyncThunk("books/fetchBooks", async ({ headers }) => {
-  try {
-    const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/get-all-books`, {
-      headers,
-    });
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    throw error;
+const fetchBooks = createAsyncThunk(
+  "books/fetchBooks",
+  async ({ headers }) => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/get-all-books`,
+        {
+          headers,
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      throw error;
+    }
   }
-});
+);;
 
 const BooksSlice = createSlice({
   name: "bookList",

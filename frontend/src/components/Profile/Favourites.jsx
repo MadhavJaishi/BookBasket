@@ -11,10 +11,10 @@ const Favourites = () => {
   useEffect(() => {
     const fetch = async () => {
       const response = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/get-all-favourites`,
+        `${import.meta.env.VITE_BACKEND_URL}/get-all-favourites`,
         { headers },
       );
-      setFavouriteBooks(response.data.data);
+      setFavouriteBooks(response.data || []);
     };
     fetch();
   }, [FavouriteBooks]);
@@ -27,6 +27,7 @@ const Favourites = () => {
       )}
       <div className="w-full md:grid grid-cols-4 gap-4">
         {FavouriteBooks &&
+          FavouriteBooks.length > 0 &&
           FavouriteBooks.map((items, i) => (
             <div key={i}>
               <BookCard data={items} favourite={true} />

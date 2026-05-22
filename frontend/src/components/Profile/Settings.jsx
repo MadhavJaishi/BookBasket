@@ -12,9 +12,12 @@ const Settings = () => {
   useEffect(() => {
     const fetch = async () => {
       try {
-        const resp = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/get-user-info`, {
-          headers,
-        });
+        const resp = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/get-user-info`,
+          {
+            headers,
+          },
+        );
         setProfileData(resp.data);
         setValue({ address: resp.data.address });
       } catch (error) {
@@ -32,7 +35,7 @@ const Settings = () => {
   };
   const submitAddress = async () => {
     const response = await axios.put(
-      `${process.env.REACT_APP_BACKEND_URL}/update-address`,
+      `${import.meta.env.VITE_BACKEND_URL}/update-address`,
       Value,
       { headers },
     );
@@ -53,13 +56,19 @@ const Settings = () => {
           <div className="flex flex-col md:flex-row gap-12">
             <div className="flex flex-col w-full md:w-1/2">
               <label htmlFor="username">Username</label>
-              <p id="username" className="p-2 rounded bg-zinc-800 mt-2 font-semibold">
+              <p
+                id="username"
+                className="p-2 rounded bg-zinc-800 mt-2 font-semibold"
+              >
                 {ProfileData.username}
               </p>
             </div>
             <div className="flex flex-col w-full md:w-1/2">
               <label htmlFor="email">Email</label>
-              <p id="email" className="p-2 rounded bg-zinc-800 mt-2 font-semibold">
+              <p
+                id="email"
+                className="p-2 rounded bg-zinc-800 mt-2 font-semibold"
+              >
                 {ProfileData.email}
               </p>
             </div>

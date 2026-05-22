@@ -15,9 +15,12 @@ const Profile = () => {
   const [Profile, setProfile] = useState({});
   useEffect(() => {
     const fetch = async () => {
-      const resp = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/get-user-info`, {
-        headers,
-      });
+      const resp = await axios.get(
+        `${import.meta.env.VITE_BACKEND_URL}/get-user-info`,
+        {
+          headers,
+        },
+      );
       setProfile(resp.data);
     };
     fetch();

@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import cors from "cors";
 app.use(cors());
-app.use(json());
+app.use(express.json());
 import conn from "./conn/conn.js";
 conn();
 import User from "./routes/user.js";

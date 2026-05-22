@@ -29,7 +29,7 @@ const UpdateBook = () => {
         alert("All fields are required");
       } else {
         const response = await axios.put(
-          `${process.env.REACT_APP_BACKEND_URL}/update-book`,
+          `${import.meta.env.VITE_BACKEND_URL}/update-book`,
           Data,
           { headers },
         );
@@ -43,7 +43,7 @@ const UpdateBook = () => {
   useEffect(() => {
     const fetch = async () => {
       const resp = await axios.get(
-        `${process.env.REACT_APP_BACKEND_URL}/get-book-details/${id}`,
+        `${import.meta.env.VITE_BACKEND_URL}/get-book-details/${id}`,
       );
       setData(resp.data.data);
     };
