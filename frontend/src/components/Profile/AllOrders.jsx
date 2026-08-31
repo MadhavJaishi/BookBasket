@@ -6,24 +6,34 @@ import { FaUserLarge } from "react-icons/fa6";
 import { FaCheck } from "react-icons/fa";
 import { IoOpenOutline } from "react-icons/io5";
 import SeeUserData from "../../pages/SeeUserData";
-import { fetchBooks } from "../../store/bookSlice";
-import { useDispatch } from "react-redux";
 
 const AllOrders = () => {
-  const [AllOrders, setAllOrders] = useState([]);
+  const [AllOrders, setAllOrders] = useState(null);
   const [Options, setOptions] = useState(-1);
   const [Values, setValues] = useState({ status: "" });
   const [UserDiv, setUserDiv] = useState("hidden");
   const [UserDivData, setUserDivData] = useState("");
-  const dispatch = useDispatch();
 
   const headers = {
+    id: localStorage.getItem("id"),
     userid: localStorage.getItem("id"),
     authorization: `Bearer ${localStorage.getItem("token")}`,
   };
 
   useEffect(() => {
-    dispatch(fetchBooks({ headers }));
+    const fetchOrders = async () => {
+      try {
+        const response = await axios.get(
+          `${import.meta.env.VITE_BACKEND_URL}/get-all-orders`,
+          { headers }
+        );
+        setAllOrders(response.data.data);
+      } catch (error) {
+        console.error("Error fetching all orders:", error);
+        setAllOrders([]);
+      }
+    };
+    fetchOrders();
   }, []);
 
   const change = (e) => {
@@ -32,24 +42,41 @@ const AllOrders = () => {
   };
 
   const submitChanges = async (i) => {
-    const id = AllOrders[i]._id;
-    const response = await axios.put(
-      `${import.meta.env.VITE_BACKEND_URL}/update-status/${id}`,
-      Values,
-      { headers },
-    );
-    alert(response.data.msg);
+    try {
+      const id = AllOrders[i]._id;
+      const statusToUpdate = Values.status || AllOrders[i].status;
+      const response = await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/update-status/${id}`,
+        { status: statusToUpdate },
+        { headers }
+      );
+      alert(response.data.msg);
+      const updatedOrders = [...AllOrders];
+      updatedOrders[i].status = statusToUpdate;
+      setAllOrders(updatedOrders);
+    } catch (error) {
+      console.error("Error updating status:", error);
+      alert("Failed to update status");
+    }
   };
 
   return (
     <>
-      {!AllOrders.length && (
+      {!AllOrders && (
         <div className="h-[100%] flex items-center justify-center">
           <Loader />
         </div>
       )}
 
-      {AllOrders.length > 0 && (
+      {AllOrders && AllOrders.length === 0 && (
+        <div className="h-[80vh] p-4 text-zinc-100 flex items-center justify-center flex-col">
+          <h1 className="text-4xl md:text-5xl font-semibold text-zinc-500 mb-8">
+            No Orders Found
+          </h1>
+        </div>
+      )}
+
+      {AllOrders && AllOrders.length > 0 && (
         <div className="h-[100%] p-0 md:p-4 text-zinc-100">
           <h1 className="text-3xl md:text-5xl font-semibold text-zinc-500 mb-8">
             All Orders
@@ -101,7 +128,7 @@ const AllOrders = () => {
                     </Link>
                   </div>
                   <div className="w-0 md:w-[40%] hidden md:block">
-                    <h1>{items.book.desc.slice(0, 50)} ...</h1>
+                    <h1>{items.book.desc ? `${items.book.desc.slice(0, 50)} ...` : "No description"}</h1>
                   </div>
                   <div className="w-[20%] md:w-[10%] flex justify-center">
                     <h1>{items.book.price}</h1>
@@ -109,7 +136,10 @@ const AllOrders = () => {
                   <div className="w-[20%] md:w-[15%] relative overflow-visible">
                     <h1 className="font-semibold">
                       <button
-                        onClick={() => setOptions(Options === i ? -1 : i)}
+                        onClick={() => {
+                          setOptions(Options === i ? -1 : i);
+                          setValues({ status: items.status });
+                        }}
                         className="hover:scale-105 transition-all duration-300"
                       >
                         {items.status === "Order placed" ? (

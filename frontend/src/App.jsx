@@ -16,6 +16,7 @@ import Favourites from './components/Profile/Favourites'
 import UserOrderHistory from './components/Profile/UserOrderHistory'
 import AllOrders from './components/Profile/AllOrders'
 import AddBook from './components/Profile/AddBook'
+import CatalogImporter from './components/Profile/CatalogImporter'
 import Settings from './components/Profile/Settings'
 import UpdateBook from './pages/UpdateBook'
 import { fetchBooks } from './store/bookSlice'
@@ -42,6 +43,7 @@ const App = () => {
           {role === "user" ? <Route index element={<Favourites />}/> : <Route index element={<AllOrders />}/>}
           <Route path="/profile/orderHistory" element={<UserOrderHistory />}/>
           {role === "admin" && <Route path="/profile/add-book" element={<AddBook />}/>}
+          {role === "admin" && <Route path="/profile/import-catalog" element={<CatalogImporter />}/>}
           <Route path="/profile/settings" element={<Settings />}/>
         </Route>
         <Route path="/cart" element={<Cart />} />

@@ -38,6 +38,10 @@ const book = new Schema(
       type: Number,
       default: 0,
     },
+    isbn: {
+      type: String,
+      required: false,
+    },
   },
   { timestamps: true },
 );

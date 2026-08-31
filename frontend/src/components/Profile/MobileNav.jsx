@@ -27,6 +27,9 @@ const MobileNav = () => {
             <Link to="/profile/add-book" className='text-zinc-100 font-semibold w-full text-center hover:bg-zinc-900 rounded transition-all duration-300'>
                 Add Book
             </Link>
+            <Link to="/profile/import-catalog" className='text-zinc-100 font-semibold w-full text-center hover:bg-zinc-900 rounded transition-all duration-300'>
+                Catalog Importer
+            </Link>
     </div>
   )}
   </>

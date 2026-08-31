@@ -1,1 +1,67 @@
+*.env# ==========================================
+# 1. Environment & Sensitive Data
+# ==========================================
 *.env
+*.env.*
+!.env.example
+
+# ==========================================
+# 2. Dependencies & Package Managers
+# ==========================================
+node_modules/
+backend/node_modules/
+frontend/node_modules/
+.npm
+.pnpm-store
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+*.log
+
+# ==========================================
+# 3. Build & Distribution Outputs
+# ==========================================
+/dist
+/build
+frontend/dist/
+frontend/build/
+
+# Cache directories
+.cache/
+.vite/
+frontend/.vite/
+
+# ==========================================
+# 4. System & Editor-Specific Files
+# ==========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# IDEs & Editors
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+
+# ==========================================
+# 5. Testing & Coverage
+# ==========================================
+/coverage
+/.nyc_output

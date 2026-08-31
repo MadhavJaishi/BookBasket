@@ -2,9 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Loader from "../Loader/Loader";
 import { GrLanguage } from "react-icons/gr";
-import { FaHeart } from "react-icons/fa";
-import { FaShoppingCart } from "react-icons/fa";
-import { FaEdit } from "react-icons/fa";
+import { FaHeart, FaShoppingCart, FaEdit } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -18,20 +16,23 @@ const BookDetails = () => {
   const [loading, setLoading] = useState(true);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const role = useSelector((state) => state.auth.role);
+
   const headers = {
     id: localStorage.getItem("id"),
     authorization: `Bearer ${localStorage.getItem("token")}`,
     bookid: id,
   };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
         const resp = await axios.get(
-          `${import.meta.env.VITE_BACKEND_URL}/get-book-details/${id}`,
+          `${import.meta.env.VITE_BACKEND_URL}/get-book-details/${id}`
         );
         setData(resp.data.data);
       } catch (err) {
-        console.error(err);
+        console.error("Error fetching book details:", err);
       } finally {
         setLoading(false);
       }
@@ -40,31 +41,43 @@ const BookDetails = () => {
   }, [id]);
 
   const addToFavourite = async () => {
-    const response = await axios.put(
-      `${import.meta.env.VITE_BACKEND_URL}/add-book-to-favourites`,
-      {},
-      { headers },
-    );
-    alert(response.data.msg);
+    try {
+      const response = await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/add-book-to-favourites`,
+        {},
+        { headers }
+      );
+      alert(response.data.msg);
+    } catch (err) {
+      alert(err.response?.data?.msg || "Failed to add to favourites");
+    }
   };
 
   const addToCart = async () => {
-    const response = await axios.put(
-      `${import.meta.env.VITE_BACKEND_URL}/add-book-to-cart`,
-      {},
-      { headers },
-    );
-    alert(response.data.msg);
+    try {
+      const response = await axios.put(
+        `${import.meta.env.VITE_BACKEND_URL}/add-book-to-cart`,
+        {},
+        { headers }
+      );
+      alert(response.data.msg);
+    } catch (err) {
+      alert(err.response?.data?.msg || "Failed to add to cart");
+    }
   };
 
   const deleteBook = async () => {
-    const response = await axios.delete(
-      `${import.meta.env.VITE_BACKEND_URL}/delete-book`,
-      { headers },
-    );
-    alert(response.data.msg);
-    dispatch(fetchBooks());
-    navigate("/all-books");
+    try {
+      const response = await axios.delete(
+        `${import.meta.env.VITE_BACKEND_URL}/delete-book`,
+        { headers }
+      );
+      alert(response.data.msg);
+      dispatch(fetchBooks());
+      navigate("/all-books");
+    } catch (err) {
+      alert(err.response?.data?.msg || "Failed to delete book");
+    }
   };
 
   if (loading) {
@@ -74,71 +87,77 @@ const BookDetails = () => {
       </div>
     );
   }
+
+  if (!Data) {
+    return (
+      <div className="h-screen bg-zinc-800 flex flex-col items-center justify-center text-zinc-100">
+        <h2 className="text-3xl font-semibold mb-4">Book Not Found</h2>
+        <Link to="/all-books" className="bg-blue-600 px-4 py-2 rounded text-white font-semibold">
+          Back to All Books
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <>
-      (
-      <div className="px-4 md:px-12 py-8 bg-zinc-800 flex flex-col md:flex-row gap-8 items-start">
-        <div className="w-full lg:w-3/6">
-          {" "}
-          <div className="flex flex-col lg:flex-row justify-around bg-zinc-700 p-12 rounded">
-            {" "}
-            <img
-              src={Data.url}
-              className="h-[50vh] md:h-[60vh] lg:h-[70vh] rounded"
-            />{" "}
-            {isLoggedIn === true && role === "user" && (
-              <div className="flex flex-col md:flex-row lg:flex-col items-center justify-between lg:justify-start mt-8 lg:mt-0">
-                <button
-                  onClick={addToFavourite}
-                  className="bg-white rounded lg:rounded-full text-4xl lg:text-3xl p-3 text-red-500 flex items-center justify-center"
-                >
-                  <FaHeart />{" "}
-                  <span className="ms-4 block lg:hidden">Favourites</span>
-                </button>
-                <button
-                  onClick={addToCart}
-                  className="text-white rounded lg:rounded-full text-4xl lg:text-3xl p-3 mt-8 md:mt-0 lg:mt-8 bg-blue-500 flex items-center justify-center"
-                >
-                  <FaShoppingCart />{" "}
-                  <span className="ms-4 block lg:hidden">Add to cart</span>
-                </button>
-              </div>
-            )}{" "}
-            {isLoggedIn === true && role === "admin" && (
-              <div className="flex flex-col md:flex-row  lg:flex-col items-center justify-between lg:justify-start mt-8 lg:mt-0">
-                <Link
-                  to={`/update-book/${id}`}
-                  onClick={editBook}
-                  className="bg-white rounded lg:rounded-full text-4xl lg:text-3xl p-3 flex items-center justify-center"
-                >
-                  <FaEdit />{" "}
-                  <span className="ms-4 block lg:hidden">Edit book</span>
-                </Link>
-                <button
-                  onClick={deleteBook}
-                  className="text-red-500 rounded lg:rounded-full text-4xl lg:text-3xl p-3 mt-8 md:mt-0 lg:mt-8 bg-white flex items-center justify-center"
-                >
-                  <MdDeleteOutline />{" "}
-                  <span className="ms-4 block lg:hidden">Delete book</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-        <div className="p-4 w-full lg:w-3/6">
-          <h1 className="text-4xl text-zinc-300 font-semibold">{Data.title}</h1>
-          <p className="text-zinc-400 mt-1">By {Data.author}</p>
-          <p className="text-zinc-500 mt-4 text-xl">{Data.desc}</p>
-          <p className="flex mt-4 items-center justify-start text-zinc-400">
-            <GrLanguage className="me-3" /> {Data.language}
-          </p>
-          <p className="mt-4 text-zinc-300 text-3xl font-semibold">
-            Price : &#8377; {Data.price}{" "}
-          </p>
+    <div className="px-4 md:px-12 py-8 bg-zinc-800 flex flex-col md:flex-row gap-8 items-start min-h-screen">
+      <div className="w-full lg:w-3/6">
+        <div className="flex flex-col lg:flex-row justify-around bg-zinc-700 p-12 rounded">
+          <img
+            src={Data.url}
+            alt={Data.title}
+            className="h-[50vh] md:h-[60vh] lg:h-[70vh] rounded object-contain"
+          />
+          {isLoggedIn === true && role === "user" && (
+            <div className="flex flex-col md:flex-row lg:flex-col items-center justify-between lg:justify-start mt-8 lg:mt-0">
+              <button
+                onClick={addToFavourite}
+                className="bg-white rounded lg:rounded-full text-4xl lg:text-3xl p-3 text-red-500 flex items-center justify-center hover:scale-105 transition-all"
+              >
+                <FaHeart />
+                <span className="ms-4 block lg:hidden">Favourites</span>
+              </button>
+              <button
+                onClick={addToCart}
+                className="text-white rounded lg:rounded-full text-4xl lg:text-3xl p-3 mt-8 md:mt-0 lg:mt-8 bg-blue-500 flex items-center justify-center hover:scale-105 transition-all"
+              >
+                <FaShoppingCart />
+                <span className="ms-4 block lg:hidden">Add to cart</span>
+              </button>
+            </div>
+          )}
+          {isLoggedIn === true && role === "admin" && (
+            <div className="flex flex-col md:flex-row lg:flex-col items-center justify-between lg:justify-start mt-8 lg:mt-0">
+              <Link
+                to={`/update-book/${id}`}
+                className="bg-white rounded lg:rounded-full text-4xl lg:text-3xl p-3 flex items-center justify-center hover:scale-105 transition-all"
+              >
+                <FaEdit />
+                <span className="ms-4 block lg:hidden">Edit book</span>
+              </Link>
+              <button
+                onClick={deleteBook}
+                className="text-red-500 rounded lg:rounded-full text-4xl lg:text-3xl p-3 mt-8 md:mt-0 lg:mt-8 bg-white flex items-center justify-center hover:scale-105 transition-all"
+              >
+                <MdDeleteOutline />
+                <span className="ms-4 block lg:hidden">Delete book</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
-      )
-    </>
+      <div className="p-4 w-full lg:w-3/6">
+        <h1 className="text-4xl text-zinc-300 font-semibold">{Data.title}</h1>
+        <p className="text-zinc-400 mt-1">By {Data.author}</p>
+        <p className="text-zinc-500 mt-4 text-xl">{Data.desc}</p>
+        <p className="flex mt-4 items-center justify-start text-zinc-400">
+          <GrLanguage className="me-3" /> {Data.language}
+        </p>
+        <p className="mt-4 text-zinc-300 text-3xl font-semibold">
+          Price : &#8377; {Data.price}
+        </p>
+      </div>
+    </div>
   );
 };
 

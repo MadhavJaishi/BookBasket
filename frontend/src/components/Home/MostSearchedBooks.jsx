@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import BookCard from "../BookCard/BookCard";
-import Loader from "../../components/Loader/Loader";
+import Loader from "../Loader/Loader";
 
-const RecentlyAdded = () => {
+const MostSearchedBooks = () => {
   const [BookItems, setBookItems] = useState([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {
@@ -12,7 +12,7 @@ const RecentlyAdded = () => {
         const resp = await axios.get(
           `${import.meta.env.VITE_BACKEND_URL}/get-recent-books`,
         );
-        setBookItems(resp.data);
+        setBookItems(resp.data.data || []);
       } catch (error) {
         console.error("Error fetching recent books:", error);
       } finally {
@@ -23,7 +23,7 @@ const RecentlyAdded = () => {
   }, []);
   return (
     <div className="mt-8 px-4">
-      <h4 className="text-3xl text-red-100">Most Bought Books</h4>
+      <h4 className="text-3xl text-red-100">Most Searched Books</h4>
       {!BookItems && (
         <div className="flex items-center justify-center my-8">
           <Loader />
@@ -46,4 +46,4 @@ const RecentlyAdded = () => {
   );
 };
 
-export default RecentlyAdded;
+export default MostSearchedBooks;

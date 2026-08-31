@@ -3,8 +3,9 @@ import axios from "axios";
 
 const fetchBooks = createAsyncThunk(
   "books/fetchBooks",
-  async ({ headers }) => {
+  async (arg = {}) => {
     try {
+      const headers = arg?.headers;
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/get-all-books`,
         {
@@ -12,12 +13,12 @@ const fetchBooks = createAsyncThunk(
         }
       );
 
-      return response.data;
+      return response.data.data || [];
     } catch (error) {
       throw error;
     }
   }
-);;
+);
 
 const BooksSlice = createSlice({
   name: "bookList",

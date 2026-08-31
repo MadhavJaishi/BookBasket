@@ -1,139 +1,163 @@
-📚 Book Basket – Online Bookstore (MERN Stack)
+# 📚 Book Basket – Online Bookstore (MERN Stack)
 
-Book Basket is a full-stack MERN-based eCommerce application for books, offering users a smooth and modern experience for discovering, saving, and purchasing books.
-It includes user authentication, admin features, secure API handling, and a fully responsive UI.
+**Book Basket** is a full-stack MERN-based eCommerce application for books, offering users a smooth and modern experience for discovering, saving, and purchasing books. It features secure JWT authentication, role-based access (User/Admin), admin management (CRUD operations on books and order status management), interactive cart, favourites, and a responsive Tailwind CSS interface built on React & Vite.
 
-🌟 Features
-🔐 Authentication & Authorization
+---
 
-Secure JWT-based login & signup
+## 🌟 Features
 
-Password hashing with bcrypt
+### 🔐 Authentication & Authorization
+- Secure JWT-based login & signup
+- Password hashing with `bcrypt`
+- Role-based access control (`user` / `admin`)
 
-Role-based access (User / Admin)
+### 📘 Book Management
+- Browse all books and view detailed book information
+- Display featured/most searched books
+- Admin capabilities: Add, update, and delete books
 
-📘 Book Management
+### ❤️ User Features
+- Add & remove books to/from **Favourites**
+- Add & remove items to/from **Cart**
+- Place orders and view personal **Order History** with delivery status
 
-Browse all books
+### 🛒 Admin Features
+- View all user orders across the application
+- Inspect customer user details (username, email, address)
+- Update order delivery status (`Order placed`, `Out for delivery`, `Delivered`, `Cancelled`)
 
-Detailed book information
+---
 
-Admin can add, update, delete books
+## 🛠️ Tech Stack
 
-❤️ User Features
+### Frontend
+- **Framework**: React.js (Vite)
+- **Styling**: Tailwind CSS
+- **State Management**: Redux Toolkit (`@reduxjs/toolkit`)
+- **Routing**: React Router DOM (`v6`)
+- **Icons**: React Icons
 
-Add books to Favourites
+### Backend
+- **Runtime**: Node.js & Express.js
+- **Database**: MongoDB & Mongoose
+- **Authentication**: JSON Web Tokens (JWT) & Bcrypt
+- **Validation**: Zod
+- **Cross-Origin**: CORS
 
-Add books to Cart
+---
 
-Place Orders
+## 🗂️ Project Structure
 
-🛒 E-Commerce Essentials
-
-Interactive cart
-
-Order creation & management
-
-Clean & responsive UI
-
-⚛️ Frontend (React)
-
-Modern UI using Tailwind CSS
-
-Smooth state management with Redux
-
-Fully responsive across devices
-
-🛠️ Tech Stack
-Frontend
-
-React.js
-
-Tailwind CSS
-
-Redux Toolkit
-
-Backend
-
-Node.js
-
-Express.js
-
-MongoDB + Mongoose
-
-JWT Authentication
-
-Bcrypt Password Hashing
-
-Zod for validation
-
-🗂️ Project Structure
+```
 BookBasket/
-│
 ├── backend/
-│ ├── conn/ # Database connection
-│ ├── models/ # User, Book, Order schemas
-│ ├── routes/ # API routes (auth, books, cart, favourites, orders)
-│ ├── .env # Environment variables (not tracked in Git)
-│ └── app.js # Main server entry
+│   ├── conn/         # Database connection setup
+│   ├── models/       # Mongoose Schemas (User, Book, Order)
+│   ├── routes/       # Express API route handlers (user, book, cart, favourites, order)
+│   ├── .env          # Backend environment variables
+│   └── app.js        # Server entry point
 │
 └── frontend/
-├── src/
-│ ├── components/
-│ ├── pages/
-│ ├── redux/
-│ └── App.js
-└── tailwind.config.js
+    ├── src/
+    │   ├── components/  # Reusable UI components (Navbar, Footer, BookCard, Profile, etc.)
+    │   ├── pages/       # Page views (Home, Cart, Profile, LogIn, SignUp, etc.)
+    │   ├── store/       # Redux store & slices
+    │   ├── App.jsx      # Main application router
+    │   └── main.jsx     # Vite entry point
+    └── vite.config.js
+```
 
-🚀 Installation & Setup
-1️⃣ Clone the Repository
+---
+
+## 🚀 Installation & Setup
+
+### 1️⃣ Clone the Repository
+```bash
 git clone https://github.com/MadhavJaishi/BookBasket.git
 cd BookBasket
+```
 
-2️⃣ Backend Setup
+### 2️⃣ Backend Setup
+```bash
 cd backend
 npm install
+```
 
-Create a .env file:
+Create a `.env` file in the `backend/` directory:
+```env
+PORT=1000
+URI=your-mongodb-connection-string
+```
 
-MONGO_URI=your-mongodb-url
-JWT_SECRET=your-secret
-PORT=5000
-
-Start backend:
-
+Start the backend server:
+```bash
 npm start
+# or for development with hot reload
+npm run dev
+```
+The backend API will run on `http://localhost:1000`.
 
-3️⃣ Frontend Setup
+### 3️⃣ Frontend Setup
+```bash
 cd ../frontend
 npm install
-npm start
+```
 
-Your app will run at:
-👉 ${import.meta.env.VITE_BACKEND_URL}
+Create a `.env` file in the `frontend/` directory (if needed):
+```env
+VITE_BACKEND_URL=http://localhost:1000/api/v1
+```
 
-📦 MERN Features Breakdown
-Backend APIs Include
+Start the Vite development server:
+```bash
+npm run dev
+```
+The web application will run on `http://localhost:5173`.
 
-/auth/signup
+---
 
-/auth/login
+## 📦 API Routes Overview
 
-/books (CRUD)
+All backend endpoints are prefixed with `/api/v1`:
 
-/favourites
+### 👤 User & Auth Routes (`/api/v1`)
+- `POST /sign-up` – Register a new user
+- `POST /sign-in` – User authentication & JWT token generation
+- `GET /get-user-information` – Get current logged-in user profile
+- `PUT /update-address` – Update user shipping address
 
-/cart
+### 📚 Book Routes (`/api/v1`)
+- `GET /get-all-books` – Retrieve all available books
+- `GET /get-recent-books` – Retrieve recently added / featured books
+- `GET /get-book-by-id/:id` – Retrieve single book details
+- `POST /add-book` – *(Admin only)* Add a new book
+- `PUT /update-book` – *(Admin only)* Update existing book details
+- `DELETE /delete-book` – *(Admin only)* Delete a book
 
-/orders
+### ❤️ Favourites Routes (`/api/v1`)
+- `PUT /add-book-to-favourite` – Add book to user's favourites
+- `PUT /remove-book-from-favourite` – Remove book from user's favourites
+- `GET /get-favourite-books` – Fetch user's favourite books
 
-All routes validated with Zod and protected with middleware.
+### 🛒 Cart Routes (`/api/v1`)
+- `PUT /add-to-cart` – Add book to user's cart
+- `PUT /remove-from-cart/:bookid` – Remove book from user's cart
+- `GET /get-user-cart` – Fetch user's cart items
 
-🤝 Contributing
+### 📦 Order Routes (`/api/v1`)
+- `POST /place-order` – Place an order for items in cart
+- `GET /get-order-history` – Fetch current user's order history
+- `GET /get-all-orders` – *(Admin only)* Fetch all orders across web app
+- `PUT /update-status/:id` – *(Admin only)* Update status of an order
 
-Pull requests are welcome!
-Feel free to open issues for improvements or bugs.
+---
 
-📝 License
+## 🤝 Contributing
 
-This project is licensed under the MIT License.
+Contributions, issues, and feature requests are welcome! Feel free to check out the repository issues.
+
+---
+
+## 📝 License
+
+This project is licensed under the **MIT License**.
