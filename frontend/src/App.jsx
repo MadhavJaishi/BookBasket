@@ -21,6 +21,10 @@ import Settings from './components/Profile/Settings'
 import UpdateBook from './pages/UpdateBook'
 import { fetchBooks } from './store/bookSlice'
 
+import MyLibrary from "./pages/MyLibrary"
+import Community from "./pages/Community"
+import BookClubs from "./pages/BookClubs"
+
 const App = () => {
   const dispatch = useDispatch();
   const role = useSelector((state) => state.auth.role);
@@ -37,6 +41,9 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/all-books" element={<AllBooks />} />
+        <Route path="/library" element={<MyLibrary />} />
+        <Route path="/community" element={<Community />} />
+        <Route path="/book-clubs" element={<BookClubs />} />
         <Route path="/login" element={<LogIn />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/profile" element={<Profile />} >

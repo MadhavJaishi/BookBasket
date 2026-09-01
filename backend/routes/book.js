@@ -4,6 +4,119 @@ import { authenticateToken } from "./userAuth.js";
 import User from "../models/user.js";
 import Book from "../models/book.js";
 
+// Helper function to auto-enrich book images & details from Open Library & Google Books
+async function enrichBookWithExternalData(book) {
+  if (!book) return book;
+  let modified = false;
+  const uniqueImages = new Set();
+
+  if (book.url) uniqueImages.add(book.url);
+  if (Array.isArray(book.images)) {
+    book.images.forEach((img) => img && uniqueImages.add(img));
+  }
+
+  const cleanIsbn = book.isbn ? String(book.isbn).replace(/[^0-9X]/gi, "") : "";
+
+  if (cleanIsbn) {
+    try {
+      // 1. Fetch Open Library ISBN JSON
+      const olRes = await fetch(`https://openlibrary.org/isbn/${cleanIsbn}.json`);
+      if (olRes.ok) {
+        const olData = await olRes.json();
+
+        // Extract edition covers
+        if (Array.isArray(olData.covers)) {
+          olData.covers.forEach((cId) => {
+            if (cId > 0) {
+              uniqueImages.add(`https://covers.openlibrary.org/b/id/${cId}-L.jpg`);
+            }
+          });
+        }
+
+        // Fetch work covers if available
+        if (Array.isArray(olData.works) && olData.works[0]?.key) {
+          try {
+            const workRes = await fetch(`https://openlibrary.org${olData.works[0].key}.json`);
+            if (workRes.ok) {
+              const workData = await workRes.json();
+              if (Array.isArray(workData.covers)) {
+                workData.covers.forEach((cId) => {
+                  if (cId > 0) {
+                    uniqueImages.add(`https://covers.openlibrary.org/b/id/${cId}-L.jpg`);
+                  }
+                });
+              }
+            }
+          } catch (e) {
+            // Ignore work fetch failure
+          }
+        }
+
+        if (!book.publishedDate && olData.publish_date) {
+          book.publishedDate = String(olData.publish_date);
+          modified = true;
+        }
+        if (!book.publisher && Array.isArray(olData.publishers) && olData.publishers[0]) {
+          book.publisher = typeof olData.publishers[0] === "string" ? olData.publishers[0] : olData.publishers[0].name;
+          modified = true;
+        }
+      }
+    } catch (err) {
+      console.error("OpenLibrary fetch error:", err.message);
+    }
+
+    try {
+      // 2. Fetch Google Books Volume Info
+      const gbRes = await fetch(`https://www.googleapis.com/books/v1/volumes?q=isbn:${cleanIsbn}`);
+      if (gbRes.ok) {
+        const gbData = await gbRes.json();
+        if (gbData.items && gbData.items.length > 0) {
+          const info = gbData.items[0].volumeInfo;
+
+          if (!book.publisher && info.publisher) {
+            book.publisher = info.publisher;
+            modified = true;
+          }
+          if (!book.publishedDate && info.publishedDate) {
+            book.publishedDate = info.publishedDate;
+            modified = true;
+          }
+          if (!book.pageCount && info.pageCount) {
+            book.pageCount = info.pageCount;
+            modified = true;
+          }
+
+          if (info.imageLinks) {
+            const links = info.imageLinks;
+            [links.extraLarge, links.large, links.medium, links.small, links.thumbnail].forEach((img) => {
+              if (img) {
+                uniqueImages.add(img.replace(/^http:/i, "https:"));
+              }
+            });
+          }
+        }
+      }
+    } catch (err) {
+      console.error("GoogleBooks fetch error:", err.message);
+    }
+  }
+
+  const updatedImages = Array.from(uniqueImages);
+  if (updatedImages.length !== (book.images ? book.images.length : 0)) {
+    book.images = updatedImages;
+    modified = true;
+  }
+
+  if (modified) {
+    try {
+      await book.save();
+    } catch (e) {
+      console.error("Error saving enriched book data:", e.message);
+    }
+  }
+  return book;
+}
+
 //add book -- admin
 router.post("/add-book", authenticateToken, async (req, res) => {
   try {
@@ -12,38 +125,59 @@ router.post("/add-book", authenticateToken, async (req, res) => {
     if (user.role != "admin") {
       return res.status(500).json({ msg: "Access declined for normal users." });
     }
-    const { url, title, author, price, genre, desc, language } = req.body;
+    const { url, images, title, author, price, genre, desc, language, isbn, publisher, publishedDate, pageCount } = req.body;
+    
+    let imagesList = Array.isArray(images) ? images : (url ? [url] : []);
+
     const book = new Book({
       url: url,
-      title: title,
-      author: author,
-      price: price,
-      genre: genre,
-      desc: desc,
-      language: language
-    });
-    await book.save();
-    res.status(200).json({ msg: "Book added successfully." });
-  } catch (error) {
-    res.status(500).json({ msg: "Internal server error" });
-  }
-});
-
-//update book -- admim
-router.put("/update-book", authenticateToken, async (req, res) => {
-  try {
-    const { bookid } = req.headers;
-    const { url, title, author, price, genre, desc, language } = req.body;
-    const user = await Book.findByIdAndUpdate(bookid, {
-      url: url,
+      images: imagesList,
       title: title,
       author: author,
       price: price,
       genre: genre,
       desc: desc,
       language: language,
+      isbn: isbn,
+      publisher: publisher,
+      publishedDate: publishedDate,
+      pageCount: pageCount,
     });
-    res.status(200).json({ msg: "Book updated successfully." });
+
+    await book.save();
+    await enrichBookWithExternalData(book);
+
+    res.status(200).json({ msg: "Book added successfully.", data: book });
+  } catch (error) {
+    res.status(500).json({ msg: "Internal server error" });
+  }
+});
+
+//update book -- admin
+router.put("/update-book", authenticateToken, async (req, res) => {
+  try {
+    const { bookid } = req.headers;
+    const { url, images, title, author, price, genre, desc, language, isbn, publisher, publishedDate, pageCount } = req.body;
+    
+    const updateFields = {
+      url,
+      title,
+      author,
+      price,
+      genre,
+      desc,
+      language,
+      isbn,
+      publisher,
+      publishedDate,
+      pageCount,
+    };
+    if (Array.isArray(images)) {
+      updateFields.images = images;
+    }
+
+    const updatedBook = await Book.findByIdAndUpdate(bookid, updateFields, { new: true });
+    res.status(200).json({ msg: "Book updated successfully.", data: updatedBook });
   } catch (error) {
     res.status(500).json({ msg: "Internal server error" });
   }
@@ -90,12 +224,22 @@ router.get("/get-recent-books", async (req, res) => {
 router.get("/get-book-details/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const book = await Book.findOne({ _id: id });
+    let book = await Book.findOne({ _id: id });
+    if (!book) {
+      return res.status(404).json({ msg: "Book not found" });
+    }
+
+    // Auto enrich images and details if book has ISBN and hasn't been enriched yet
+    if (book.isbn && (!book.images || book.images.length <= 1 || !book.publisher)) {
+      book = await enrichBookWithExternalData(book);
+    }
+
     return res.json({
       status: "Success",
       data: book,
     });
   } catch (error) {
+    console.error("Error in get-book-details:", error);
     res.status(500).json({ msg: "Internal server error" });
   }
 });

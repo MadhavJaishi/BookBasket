@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import axios from "axios";
+import OptimizedImage from "../Image/OptimizedImage";
 
 const BookCard = ({ data, favourite }) => {
   const headers = {
@@ -18,17 +19,19 @@ const BookCard = ({ data, favourite }) => {
     <div className="bg-zinc-800 rounded p-4 flex flex-col">
       <Link to={`/view-book-details/${data._id}`}>
         <div className="">
-          <div className="bg-zinc-800 rounded flex items-center justify-center">
-          <img
-            src={data.url}
-            alt={data.title}
-            className="h-[25vh] w-full object-contain"
-          />
+          <div className="bg-zinc-800 rounded flex items-center justify-center h-[25vh] w-full">
+            <OptimizedImage
+              src={data.url}
+              alt={data.title}
+              className="h-[25vh] w-full"
+              containerClassName="h-[25vh] w-full"
+              objectFit="object-contain"
+            />
           </div>
-          <h2 className="mt-4 text-xl text-white font-semibold text-center">
+          <h2 className="mt-4 text-xl text-white font-semibold text-center line-clamp-1">
             {data.title}
           </h2>
-          <p className="mt-2 text-zinc-300 font-semibold text-center">
+          <p className="mt-2 text-zinc-300 font-semibold text-center line-clamp-1">
             By {data.author}
           </p>
           <p className="mt-2 text-zinc-300 font-semibold text-xl text-center">

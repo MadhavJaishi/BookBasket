@@ -3,6 +3,7 @@ import Loader from "../components/Loader/Loader";
 import axios from "axios";
 import { AiFillDelete } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
+import OptimizedImage from "../components/Image/OptimizedImage";
 
 const Cart = () => {
   const navigate = useNavigate();
@@ -81,11 +82,15 @@ const Cart = () => {
               key={i}
               className="w-full my-4 rounded flex flex-col md:flex-row p-4 bg-zinc-800 justify-between items-center"
             >
-              <img
-                src={items.url}
-                alt="bookImage"
-                className="h-[20vh] md:h-[10vh] object-cover"
-              />
+              <div className="h-[20vh] md:h-[10vh] w-[150px] md:w-[80px] flex-shrink-0 flex items-center justify-center">
+                <OptimizedImage
+                  src={items.url}
+                  alt={items.title}
+                  className="h-[20vh] md:h-[10vh] rounded"
+                  containerClassName="h-full w-full rounded"
+                  objectFit="object-contain"
+                />
+              </div>
               <div className="w-full md:w-auto">
                 <h1 className="text-2xl text-zinc-100 font-semibold text-start mt-2 md:mt-0">
                   {items.title}

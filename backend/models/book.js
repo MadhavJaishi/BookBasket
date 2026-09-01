@@ -42,6 +42,23 @@ const book = new Schema(
       type: String,
       required: false,
     },
+    images: [
+      {
+        type: String,
+      },
+    ],
+    publisher: {
+      type: String,
+      required: false,
+    },
+    publishedDate: {
+      type: String,
+      required: false,
+    },
+    pageCount: {
+      type: Number,
+      required: false,
+    },
   },
   { timestamps: true },
 );

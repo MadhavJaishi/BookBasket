@@ -29,11 +29,14 @@ const Sidebar = ({ data }) => {
         </div>
 
         {role === "user" && <div className='w-full flex-col items-center justify-center hidden lg:flex'>
+            <Link to="/library" className='text-zinc-100 font-semibold w-full py-2 mt-4 text-center hover:bg-zinc-900 rounded transition-all duration-300'>
+                My Library & Goals
+            </Link>
             <Link to="/profile" className='text-zinc-100 font-semibold w-full py-2 mt-4 text-center hover:bg-zinc-900 rounded transition-all duration-300'>
                 Favourites
             </Link>
             <Link to="/profile/orderHistory" className='text-zinc-100 font-semibold w-full py-2 mt-4 text-center hover:bg-zinc-900 rounded transition-all duration-300'>
-                Order
+                Order History
             </Link>
             <Link to="/profile/settings" className='text-zinc-100 font-semibold w-full py-2 mt-4 text-center hover:bg-zinc-900 rounded transition-all duration-300'>
                 Settings

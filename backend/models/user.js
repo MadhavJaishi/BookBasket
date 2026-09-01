@@ -47,6 +47,34 @@ const user = new Schema(
         ref: "order",
       },
     ],
+    bio: {
+      type: String,
+      default: "Passionate reader exploring new perspectives.",
+    },
+    favoriteGenres: [
+      {
+        type: String,
+      },
+    ],
+    readingGoal: {
+      year: { type: Number, default: 2026 },
+      targetBooks: { type: Number, default: 12 },
+    },
+    privacy: {
+      isPublic: { type: Boolean, default: true },
+    },
+    followers: [
+      {
+        type: Types.ObjectId,
+        ref: "user",
+      },
+    ],
+    following: [
+      {
+        type: Types.ObjectId,
+        ref: "user",
+      },
+    ],
   },
   { timestamps: true },
 );
