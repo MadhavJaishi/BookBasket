@@ -40,14 +40,41 @@ router.get("/reading/my-library", authenticateToken, async (req, res) => {
   }
 });
 
-// POST /api/v1/reading/status - Add or update book reading status
+// DELETE /api/v1/reading/status/:bookId - Remove book from reading tracker
+router.delete("/reading/status/:bookId", authenticateToken, async (req, res) => {
+  try {
+    const userId = getUserId(req);
+    const { bookId } = req.params;
+
+    await UserBook.findOneAndDelete({ user: userId, book: bookId });
+    return res.status(200).json({
+      status: "Success",
+      msg: "Removed from reading tracker",
+      data: null,
+    });
+  } catch (error) {
+    console.error("Error removing reading status:", error);
+    return res.status(500).json({ msg: "Internal server error" });
+  }
+});
+
+// POST /api/v1/reading/status - Add, update, or remove book reading status
 router.post("/reading/status", authenticateToken, async (req, res) => {
   try {
     const userId = getUserId(req);
     const { bookId, status, currentPage, totalPages } = req.body;
 
-    if (!bookId || !status) {
-      return res.status(400).json({ msg: "Book ID and status are required" });
+    if (!bookId) {
+      return res.status(400).json({ msg: "Book ID is required" });
+    }
+
+    if (status === "REMOVE" || status === "NONE" || status === null) {
+      await UserBook.findOneAndDelete({ user: userId, book: bookId });
+      return res.status(200).json({
+        status: "Success",
+        msg: "Removed from reading tracker",
+        data: null,
+      });
     }
 
     const validStatuses = ["WANT_TO_READ", "CURRENTLY_READING", "FINISHED"];
@@ -135,7 +162,31 @@ router.patch("/reading/progress", authenticateToken, async (req, res) => {
 
     let entry = await UserBook.findOne({ user: userId, book: bookId }).populate("book");
     if (!entry) {
-      return res.status(404).json({ msg: "Book entry not found in library" });
+      const bookDoc = await Book.findById(bookId);
+      if (!bookDoc) {
+        return res.status(404).json({ msg: "Book not found" });
+      }
+      const totalPages = bookDoc.pageCount || 300;
+      const pageNum = Math.max(0, Math.min(Number(currentPage), totalPages));
+      const progressPct = Math.min(100, Math.round((pageNum / totalPages) * 100));
+
+      entry = new UserBook({
+        user: userId,
+        book: bookId,
+        status: progressPct >= 100 ? "FINISHED" : "CURRENTLY_READING",
+        currentPage: pageNum,
+        progressPercentage: progressPct,
+        startedAt: new Date(),
+        finishedAt: progressPct >= 100 ? new Date() : undefined,
+      });
+      await entry.save();
+      await entry.populate("book");
+
+      return res.status(200).json({
+        status: "Success",
+        msg: "Progress saved and added to library",
+        data: entry,
+      });
     }
 
     const totalPages = entry.book?.pageCount || 300;

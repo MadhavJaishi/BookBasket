@@ -8,11 +8,18 @@ import User from "../models/user.js";
 router.post("/place-order", authenticateToken, async (req, res) => {
   try {
     const { id } = req.headers;
-    const { order } = req.body;
+    const { order, shippingAddress } = req.body;
+    let finalAddress = shippingAddress;
+    if (!finalAddress) {
+      const user = await User.findById(id);
+      const primaryAddr = user?.addresses?.find((a) => a.isPrimary);
+      finalAddress = primaryAddr?.formattedAddress || user?.address || "";
+    }
     for (const orderData of order) {
       const newOrder = new Order({
         user: id,
         book: orderData._id,
+        shippingAddress: finalAddress,
       });
       const orderedDataFromDB = await newOrder.save();
       await User.findByIdAndUpdate(id, {

@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { fetchBooks } from "../../store/bookSlice";
-import { FaFileCode, FaCopy, FaDownload, FaMagic, FaCheckCircle, FaExclamationTriangle, FaTimesCircle, FaSpinner } from "react-icons/fa";
+import { FaFileCode, FaCopy, FaDownload, FaMagic, FaCheckCircle, FaExclamationTriangle, FaTimesCircle, FaSpinner, FaArrowRight } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const EXAMPLE_JSON = [
   {
@@ -70,7 +71,6 @@ const CatalogImporter = () => {
     let cleaned = rawInput.trim();
     if (!cleaned) throw new Error("Textarea is empty. Please paste or load JSON.");
 
-    // Remove trailing comma if present at the very end
     if (cleaned.endsWith(",")) {
       cleaned = cleaned.slice(0, -1).trim();
     }
@@ -79,15 +79,14 @@ const CatalogImporter = () => {
     try {
       parsed = JSON.parse(cleaned);
     } catch (err) {
-      // If parsing failed, try wrapping in [] if it looks like an object or comma-separated objects
       if (cleaned.startsWith("{")) {
         try {
           parsed = JSON.parse(`[${cleaned}]`);
         } catch (innerErr) {
-          throw new Error(`JSON Syntax Error: ${err.message}. Ensure properties and string values use double quotes (").`);
+          throw new Error(`JSON Syntax Error: ${err.message}. Ensure properties and strings use double quotes (").`);
         }
       } else {
-        throw new Error(`JSON Syntax Error: ${err.message}. Ensure properties and string values use double quotes (").`);
+        throw new Error(`JSON Syntax Error: ${err.message}. Ensure properties and strings use double quotes (").`);
       }
     }
 
@@ -99,7 +98,7 @@ const CatalogImporter = () => {
           parsed = [parsed];
         }
       } else {
-        throw new Error("Invalid JSON structure. Root element must be a JSON array or book object.");
+        throw new Error("Invalid JSON structure. Root element must be an array of book objects.");
       }
     }
 
@@ -138,12 +137,11 @@ const CatalogImporter = () => {
 
       if (response.data && response.data.summary) {
         setImportSummary(response.data.summary);
-        // Refresh Redux store so books immediately show in site UI
         dispatch(fetchBooks({ headers }));
       }
     } catch (error) {
       console.error("Import error:", error);
-      const msg = error.response?.data?.msg || "Failed to import books. Please try again.";
+      const msg = error.response?.data?.msg || "Failed to import books. Please check formatting.";
       setValidationError(msg);
     } finally {
       setLoading(false);
@@ -151,167 +149,144 @@ const CatalogImporter = () => {
   };
 
   return (
-    <div className="h-full p-0 md:p-4 text-zinc-100 max-w-6xl mx-auto">
-      <div className="flex items-center gap-3 mb-6">
-        <FaFileCode className="text-3xl text-emerald-400" />
-        <h1 className="text-3xl md:text-5xl font-semibold text-zinc-200">
-          Catalog Importer
-        </h1>
+    <div className="space-y-6 animate-fadeIn max-w-5xl">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-800/80 pb-6">
+        <div>
+          <span className="text-xs uppercase tracking-widest text-emerald-400 font-medium">
+            Batch Operations
+          </span>
+          <h1 className="text-3xl font-serif text-white font-normal mt-1">
+            JSON Catalog Importer
+          </h1>
+          <p className="text-xs text-zinc-400 font-light mt-1">
+            Bulk ingest book records with ISBN enrichment, duplicate prevention, and automatic schema validation.
+          </p>
+        </div>
+
+        <Link
+          to="/profile/inventory"
+          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors"
+        >
+          View Catalog <FaArrowRight className="text-[10px]" />
+        </Link>
       </div>
 
-      <p className="text-zinc-400 mb-6">
-        Bulk import book items into the BookBasket catalog by pasting a structured JSON array below.
-      </p>
-
-      {/* Action Buttons Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-zinc-800 p-4 rounded-t-xl border-b border-zinc-700">
+      {/* Action Toolbar */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-zinc-900/60 p-4 rounded-3xl border border-zinc-800/80">
         <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={handleLoadExample}
-            className="flex items-center gap-2 bg-zinc-700 hover:bg-zinc-600 text-zinc-100 px-3 py-1.5 rounded text-sm transition-all duration-200"
+            className="flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3.5 py-2 rounded-2xl text-xs font-light transition-all border border-zinc-700/60"
           >
-            <FaDownload className="text-emerald-400" /> Load Example
+            <FaDownload className="text-emerald-400 text-xs" /> Load Sample
           </button>
 
           <button
             onClick={handleCopyExample}
-            className="flex items-center gap-2 bg-zinc-700 hover:bg-zinc-600 text-zinc-100 px-3 py-1.5 rounded text-sm transition-all duration-200"
+            className="flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3.5 py-2 rounded-2xl text-xs font-light transition-all border border-zinc-700/60"
           >
-            <FaCopy className="text-blue-400" /> {copySuccess ? "Copied!" : "Copy Example"}
+            <FaCopy className="text-sky-400 text-xs" /> {copySuccess ? "Copied!" : "Copy Template"}
           </button>
 
           <button
             onClick={handleFormatJson}
-            className="flex items-center gap-2 bg-zinc-700 hover:bg-zinc-600 text-zinc-100 px-3 py-1.5 rounded text-sm transition-all duration-200"
+            className="flex items-center gap-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-3.5 py-2 rounded-2xl text-xs font-light transition-all border border-zinc-700/60"
           >
-            <FaMagic className="text-yellow-400" /> Format JSON
+            <FaMagic className="text-emerald-400 text-xs" /> Prettify JSON
           </button>
         </div>
 
         <button
           onClick={handleImport}
           disabled={loading}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-emerald-800 text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 shadow-md"
+          className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-800 text-zinc-950 font-medium px-6 py-2.5 rounded-full text-xs transition-all shadow-lg shadow-emerald-950/40 disabled:text-zinc-500"
         >
           {loading ? (
             <>
-              <FaSpinner className="animate-spin" /> Importing...
+              <FaSpinner className="animate-spin" /> Ingesting Records...
             </>
           ) : (
-            <>Import Books</>
+            <>Ingest Records</>
           )}
         </button>
       </div>
 
-      {/* JSON Editor Textarea */}
-      <div className="relative mb-6">
+      {/* Editor Textarea */}
+      <div className="p-4 rounded-3xl bg-zinc-900/40 border border-zinc-800/80">
         <textarea
           value={jsonInput}
           onChange={(e) => setJsonInput(e.target.value)}
-          placeholder="Paste JSON array of books here... or click 'Load Example' above"
-          rows={14}
-          className="w-full bg-zinc-900 border border-zinc-700 focus:border-emerald-500 text-zinc-100 text-sm font-mono p-4 outline-none rounded-b-xl transition-all duration-300 shadow-inner placeholder:text-zinc-600"
+          placeholder="Paste JSON array of books here... or click 'Load Sample' above"
+          rows={12}
+          className="w-full bg-zinc-950/80 border border-zinc-800/80 focus:border-emerald-500 text-zinc-100 text-xs font-mono p-4 outline-none rounded-2xl transition-colors resize-y placeholder:text-zinc-700"
         />
       </div>
 
-      {/* Syntax Validation Error Alert */}
+      {/* Validation Alert */}
       {validationError && (
-        <div className="mb-6 bg-red-900/40 border border-red-500/60 text-red-200 p-4 rounded-xl flex items-start gap-3">
-          <FaTimesCircle className="text-xl text-red-400 mt-0.5 shrink-0" />
+        <div className="bg-red-950/40 border border-red-500/60 text-red-200 p-4 rounded-2xl flex items-start gap-3">
+          <FaTimesCircle className="text-base text-red-400 mt-0.5 shrink-0" />
           <div>
-            <h4 className="font-semibold">Validation / Import Error</h4>
-            <p className="text-sm mt-1">{validationError}</p>
+            <h4 className="font-medium text-xs">Validation or Ingest Error</h4>
+            <p className="text-xs text-red-300/90 font-light mt-1">{validationError}</p>
           </div>
         </div>
       )}
 
-      {/* Import Summary Results */}
+      {/* Summary Matrix */}
       {importSummary && (
-        <div className="mb-8 bg-zinc-800/90 border border-zinc-700 rounded-xl p-6 shadow-xl">
-          <h3 className="text-xl font-semibold text-zinc-100 mb-4 flex items-center gap-2">
-            <FaCheckCircle className="text-emerald-400" /> Import Summary
+        <div className="p-6 rounded-3xl bg-zinc-900/50 border border-zinc-800/90 space-y-4">
+          <h3 className="text-sm font-serif text-white flex items-center gap-2">
+            <FaCheckCircle className="text-emerald-400" /> Ingestion Results
           </h3>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-zinc-900/80 p-4 rounded-lg border border-zinc-700 text-center">
-              <span className="text-zinc-400 text-sm block">Total Processed</span>
-              <span className="text-2xl font-bold text-zinc-100">{importSummary.total}</span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="p-3.5 rounded-2xl bg-zinc-950/70 border border-zinc-800 text-center">
+              <span className="text-[10px] uppercase text-zinc-500 font-light block">Total Records</span>
+              <span className="text-xl font-serif text-zinc-100">{importSummary.total}</span>
             </div>
-            <div className="bg-emerald-950/40 p-4 rounded-lg border border-emerald-800/60 text-center">
-              <span className="text-emerald-300 text-sm block">Successfully Imported</span>
-              <span className="text-2xl font-bold text-emerald-400">{importSummary.imported}</span>
+            <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 text-center">
+              <span className="text-[10px] uppercase text-emerald-400/80 font-light block">Imported</span>
+              <span className="text-xl font-serif text-emerald-400">{importSummary.imported}</span>
             </div>
-            <div className="bg-amber-950/40 p-4 rounded-lg border border-amber-800/60 text-center">
-              <span className="text-amber-300 text-sm block">Skipped (Duplicates)</span>
-              <span className="text-2xl font-bold text-amber-400">{importSummary.skipped}</span>
+            <div className="p-3.5 rounded-2xl bg-zinc-900/60 border border-zinc-800 text-center">
+              <span className="text-[10px] uppercase text-zinc-400/80 font-light block">Skipped (Dupes)</span>
+              <span className="text-xl font-serif text-zinc-300">{importSummary.skipped}</span>
             </div>
-            <div className="bg-red-950/40 p-4 rounded-lg border border-red-800/60 text-center">
-              <span className="text-red-300 text-sm block">Failed Validation</span>
-              <span className="text-2xl font-bold text-red-400">{importSummary.failed}</span>
+            <div className="p-3.5 rounded-2xl bg-red-950/40 border border-red-500/30 text-center">
+              <span className="text-[10px] uppercase text-red-400/80 font-light block">Failed Schema</span>
+              <span className="text-xl font-serif text-red-400">{importSummary.failed}</span>
             </div>
           </div>
-
-          {/* Details Breakdown */}
-          {importSummary.details?.skipped?.length > 0 && (
-            <div className="mt-4 bg-amber-900/20 border border-amber-800/40 p-4 rounded-lg">
-              <h4 className="text-amber-300 font-semibold mb-2 flex items-center gap-2">
-                <FaExclamationTriangle /> Skipped Items ({importSummary.details.skipped.length}):
-              </h4>
-              <ul className="space-y-1.5 text-sm text-amber-200/90 font-mono">
-                {importSummary.details.skipped.map((item, idx) => (
-                  <li key={idx} className="bg-amber-950/50 p-2 rounded border border-amber-900/30">
-                    <span className="font-semibold text-amber-400">Book #{item.index}:</span> {item.title} {item.author ? `by ${item.author}` : ""} — <span className="italic text-zinc-300">{item.reason}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {importSummary.details?.failed?.length > 0 && (
-            <div className="mt-4 bg-red-900/20 border border-red-800/40 p-4 rounded-lg">
-              <h4 className="text-red-300 font-semibold mb-2 flex items-center gap-2">
-                <FaTimesCircle /> Failed Validation Items ({importSummary.details.failed.length}):
-              </h4>
-              <ul className="space-y-1.5 text-sm text-red-200/90 font-mono">
-                {importSummary.details.failed.map((item, idx) => (
-                  <li key={idx} className="bg-red-950/50 p-2 rounded border border-red-900/30">
-                    <span className="font-semibold text-red-400">Book #{item.index}:</span> {item.title} — <span className="italic text-zinc-300">{item.reason}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
       )}
 
-      {/* Guide & Reference Sections */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Accepted JSON Format */}
-        <div className="bg-zinc-800 p-6 rounded-xl border border-zinc-700">
-          <h3 className="text-xl font-semibold text-emerald-400 mb-3 flex items-center gap-2">
-            Accepted JSON Format
+      {/* Schema Reference */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="p-6 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 space-y-3">
+          <h3 className="text-xs uppercase tracking-wider text-emerald-400 font-medium">
+            JSON Schema Specification
           </h3>
-          <p className="text-sm text-zinc-300 mb-4">
-            The input must be a JSON array containing book objects with the following fields:
+          <p className="text-xs text-zinc-400 font-light">
+            Each book object in the array should conform to the following properties:
           </p>
-          <ul className="space-y-2 text-sm text-zinc-300 font-mono">
-            <li><span className="text-emerald-400 font-bold">title</span> (string, required) - Book title</li>
-            <li><span className="text-emerald-400 font-bold">author</span> (string, required) - Author name</li>
-            <li><span className="text-emerald-400 font-bold">price</span> (number, required) - Price in INR/USD</li>
-            <li><span className="text-emerald-400 font-bold">description / desc</span> (string, required) - Book description</li>
-            <li><span className="text-emerald-400 font-bold">category / genre</span> (string, required) - Genre/Category</li>
-            <li><span className="text-emerald-400 font-bold">coverImage / url</span> (string, required) - Image URL</li>
-            <li><span className="text-emerald-400 font-bold">language</span> (string, optional) - Defaults to English</li>
-            <li><span className="text-emerald-400 font-bold">isbn</span> (string, optional) - Used for duplicate checking</li>
+          <ul className="space-y-1.5 text-xs text-zinc-300 font-mono">
+            <li><span className="text-emerald-400 font-bold">title</span> (string, required)</li>
+            <li><span className="text-emerald-400 font-bold">author</span> (string, required)</li>
+            <li><span className="text-emerald-400 font-bold">price</span> (number, required)</li>
+            <li><span className="text-emerald-400 font-bold">description</span> (string, required)</li>
+            <li><span className="text-emerald-400 font-bold">category / genre</span> (string)</li>
+            <li><span className="text-emerald-400 font-bold">coverImage / url</span> (string)</li>
+            <li><span className="text-emerald-400 font-bold">isbn</span> (string, optional)</li>
           </ul>
         </div>
 
-        {/* Example JSON Section */}
-        <div className="bg-zinc-800 p-6 rounded-xl border border-zinc-700">
-          <h3 className="text-xl font-semibold text-blue-400 mb-3 flex items-center gap-2">
+        <div className="p-6 rounded-3xl bg-zinc-900/40 border border-zinc-800/80 space-y-3">
+          <h3 className="text-xs uppercase tracking-wider text-sky-400 font-medium">
             Example JSON Structure
           </h3>
-          <pre className="bg-zinc-900 p-4 rounded-lg text-xs font-mono text-zinc-300 overflow-x-auto border border-zinc-700 max-h-60">
+          <pre className="p-3 rounded-2xl bg-zinc-950 text-[11px] font-mono text-zinc-400 overflow-x-auto border border-zinc-800/60 max-h-48">
             {sampleJsonString}
           </pre>
         </div>

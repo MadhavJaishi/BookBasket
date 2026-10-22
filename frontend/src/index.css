@@ -3,7 +3,250 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
-    background-color: #1c1c1c;
+  :root {
+    color-scheme: dark;
   }
+
+  html, body {
+    background-color: #08090a;
+    color: #e4e4e7;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    overflow-x: hidden;
+  }
+
+  ::selection {
+    background-color: #10b981;
+    color: #04140e;
+  }
+
+  ::-moz-selection {
+    background-color: #10b981;
+    color: #04140e;
+  }
+
+  /* Override Browser Autofill & Suggestion Styles - Dark Mode */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #09090b inset !important;
+    box-shadow: 0 0 0 1000px #09090b inset !important;
+    -webkit-text-fill-color: #f4f4f5 !important;
+    caret-color: #f4f4f5 !important;
+    border-radius: 1rem !important;
+    transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+  }
+
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  textarea:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #09090b inset !important;
+    box-shadow: 0 0 0 1000px #09090b inset !important;
+    -webkit-text-fill-color: #f4f4f5 !important;
+    caret-color: #f4f4f5 !important;
+    border-radius: 1rem !important;
+    transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+  }
+
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus,
+  select:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #09090b inset !important;
+    box-shadow: 0 0 0 1000px #09090b inset !important;
+    -webkit-text-fill-color: #f4f4f5 !important;
+    caret-color: #f4f4f5 !important;
+    border-radius: 1rem !important;
+    transition: background-color 5000000s ease-in-out 0s, color 5000000s ease-in-out 0s !important;
+  }
+
+  /* Standard CSS autofill */
+  input:autofill,
+  textarea:autofill,
+  select:autofill {
+    box-shadow: 0 0 0 1000px #09090b inset !important;
+    -webkit-text-fill-color: #f4f4f5 !important;
+    border-radius: 1rem !important;
+  }
+
+  /* WebKit suggestion previewed & selected */
+  input:-webkit-autofill-previewed {
+    -webkit-box-shadow: 0 0 0 1000px #09090b inset !important;
+    box-shadow: 0 0 0 1000px #09090b inset !important;
+    -webkit-text-fill-color: #f4f4f5 !important;
+    border-radius: 1rem !important;
+  }
+
+  input:-webkit-autofill-selected {
+    -webkit-box-shadow: 0 0 0 1000px #09090b inset !important;
+    box-shadow: 0 0 0 1000px #09090b inset !important;
+    -webkit-text-fill-color: #f4f4f5 !important;
+    border-radius: 1rem !important;
+  }
+
+  /* Ensure specific utility classes maintain their border-radius under autofill */
+  .rounded-2xl:-webkit-autofill {
+    border-radius: 1rem !important;
+  }
+
+  .rounded-xl:-webkit-autofill {
+    border-radius: 0.75rem !important;
+  }
+
+  .rounded-full:-webkit-autofill {
+    border-radius: 9999px !important;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shrinkWidth {
+  from {
+    width: 100%;
+  }
+  to {
+    width: 0%;
+  }
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marquee-reverse {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scaleUp {
+  animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee-slow {
+  display: flex;
+  width: max-content;
+  animation: marquee 45s linear infinite;
+}
+
+.animate-marquee-reverse {
+  display: flex;
+  width: max-content;
+  animation: marquee-reverse 38s linear infinite;
+}
+
+.animate-marquee:hover,
+.animate-marquee-slow:hover,
+.animate-marquee-reverse:hover {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-vertical {
+  0% {
+    transform: translateY(0%);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes marquee-vertical-reverse {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0%);
+  }
+}
+
+.animate-marquee-vertical {
+  display: flex;
+  flex-direction: column;
+  height: max-content;
+  animation: marquee-vertical 260s linear infinite;
+}
+
+.animate-marquee-vertical-slow {
+  display: flex;
+  flex-direction: column;
+  height: max-content;
+  animation: marquee-vertical 290s linear infinite;
+}
+
+.animate-marquee-vertical-reverse {
+  display: flex;
+  flex-direction: column;
+  height: max-content;
+  animation: marquee-vertical-reverse 460s linear infinite;
+}
+
+.animate-marquee-vertical:hover,
+.animate-marquee-vertical-slow:hover,
+.animate-marquee-vertical-reverse:hover {
+  animation-play-state: paused;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-none::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-none {
+  -ms-overflow-style: none !important;  /* IE and Edge */
+  scrollbar-width: none !important;  /* Firefox */
 }

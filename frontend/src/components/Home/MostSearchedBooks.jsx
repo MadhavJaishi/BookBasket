@@ -53,7 +53,7 @@ const MostSearchedBooks = () => {
       {/* Header & Interactive Category Filter Tabs */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 mb-8 border-b border-zinc-800 pb-4">
         <div>
-          <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400 mb-1">
+          <div className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400 mb-1">
             <FaFire /> Trending Collection
           </div>
           <h2 className="text-3xl md:text-4xl font-extrabold text-white">

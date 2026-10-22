@@ -117,6 +117,66 @@ async function enrichBookWithExternalData(book) {
   return book;
 }
 
+import StoreSetting from "../models/storeSetting.js";
+
+// Helper to retrieve or initialize StoreSettings singleton
+export async function getStoreSettings() {
+  let settings = await StoreSetting.findOne();
+  if (!settings) {
+    settings = await StoreSetting.create({
+      autoRandomDiscount: false,
+      minRandomPercent: 5,
+      maxRandomPercent: 35,
+    });
+  }
+  return settings;
+}
+
+// Consistent deterministic random discount between 5% and 35% based on book ID
+export function getDeterministicDiscount(bookId, min = 5, max = 35) {
+  const str = String(bookId || "");
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) % 1000000;
+  }
+  return min + (Math.abs(hash) % (max - min + 1));
+}
+
+// Helper to format book with discounts according to admin specifications and global auto-discount state
+export function formatBookWithDiscount(bookDoc, autoRandomDiscount = false) {
+  if (!bookDoc) return bookDoc;
+  const book = typeof bookDoc.toObject === "function" ? bookDoc.toObject() : { ...bookDoc };
+
+  const rawAdminDiscount = Number(book.discountPercent) || 0;
+  let effectiveDiscount = rawAdminDiscount;
+  let isAuto = false;
+
+  if (rawAdminDiscount > 0) {
+    effectiveDiscount = Math.min(99, Math.max(1, Math.round(rawAdminDiscount)));
+  } else if (autoRandomDiscount) {
+    effectiveDiscount = getDeterministicDiscount(book._id, 5, 35);
+    isAuto = true;
+  } else {
+    effectiveDiscount = 0;
+  }
+
+  const price = Number(book.price) || 0;
+  const discountedPrice =
+    effectiveDiscount > 0
+      ? Math.max(0, Math.round(price * (1 - effectiveDiscount / 100)))
+      : price;
+
+  return {
+    ...book,
+    price,
+    discountPercent: effectiveDiscount,
+    adminDiscountPercent: rawAdminDiscount,
+    isAutoDiscount: isAuto,
+    discountedPrice,
+    hasDiscount: effectiveDiscount > 0,
+  };
+}
+
 //add book -- admin
 router.post("/add-book", authenticateToken, async (req, res) => {
   try {
@@ -125,7 +185,7 @@ router.post("/add-book", authenticateToken, async (req, res) => {
     if (user.role != "admin") {
       return res.status(500).json({ msg: "Access declined for normal users." });
     }
-    const { url, images, title, author, price, genre, desc, language, isbn, publisher, publishedDate, pageCount } = req.body;
+    const { url, images, title, author, price, discountPercent, genre, desc, language, isbn, publisher, publishedDate, pageCount } = req.body;
     
     let imagesList = Array.isArray(images) ? images : (url ? [url] : []);
 
@@ -134,7 +194,8 @@ router.post("/add-book", authenticateToken, async (req, res) => {
       images: imagesList,
       title: title,
       author: author,
-      price: price,
+      price: Number(price),
+      discountPercent: Math.min(99, Math.max(0, Number(discountPercent) || 0)),
       genre: genre,
       desc: desc,
       language: language,
@@ -147,7 +208,10 @@ router.post("/add-book", authenticateToken, async (req, res) => {
     await book.save();
     await enrichBookWithExternalData(book);
 
-    res.status(200).json({ msg: "Book added successfully.", data: book });
+    const settings = await getStoreSettings();
+    const formatted = formatBookWithDiscount(book, settings.autoRandomDiscount);
+
+    res.status(200).json({ msg: "Book added successfully.", data: formatted });
   } catch (error) {
     res.status(500).json({ msg: "Internal server error" });
   }
@@ -157,13 +221,13 @@ router.post("/add-book", authenticateToken, async (req, res) => {
 router.put("/update-book", authenticateToken, async (req, res) => {
   try {
     const { bookid } = req.headers;
-    const { url, images, title, author, price, genre, desc, language, isbn, publisher, publishedDate, pageCount } = req.body;
+    const { url, images, title, author, price, discountPercent, genre, desc, language, isbn, publisher, publishedDate, pageCount } = req.body;
     
     const updateFields = {
       url,
       title,
       author,
-      price,
+      price: Number(price),
       genre,
       desc,
       language,
@@ -172,21 +236,111 @@ router.put("/update-book", authenticateToken, async (req, res) => {
       publishedDate,
       pageCount,
     };
+    if (discountPercent !== undefined) {
+      updateFields.discountPercent = Math.min(99, Math.max(0, Number(discountPercent) || 0));
+    }
     if (Array.isArray(images)) {
       updateFields.images = images;
     }
 
     const updatedBook = await Book.findByIdAndUpdate(bookid, updateFields, { new: true });
-    res.status(200).json({ msg: "Book updated successfully.", data: updatedBook });
+    const settings = await getStoreSettings();
+    const formatted = formatBookWithDiscount(updatedBook, settings.autoRandomDiscount);
+
+    res.status(200).json({ msg: "Book updated successfully.", data: formatted });
   } catch (error) {
     res.status(500).json({ msg: "Internal server error" });
   }
 });
 
-//delete book -- admin
-router.delete("/delete-book", authenticateToken, async (req, res) => {
+//quick update book discount -- admin
+router.put("/update-book-discount/:id", authenticateToken, async (req, res) => {
   try {
-    const { bookid } = req.headers;
+    const userid = req.headers.id || req.headers.userid;
+    const user = await User.findById(userid);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ msg: "Access declined for normal users." });
+    }
+    const { id } = req.params;
+    const { discountPercent } = req.body;
+    const discountVal = Math.min(99, Math.max(0, Number(discountPercent) || 0));
+
+    const updatedBook = await Book.findByIdAndUpdate(
+      id,
+      { discountPercent: discountVal },
+      { new: true }
+    );
+    if (!updatedBook) {
+      return res.status(404).json({ msg: "Book not found" });
+    }
+
+    const settings = await getStoreSettings();
+    const formatted = formatBookWithDiscount(updatedBook, settings.autoRandomDiscount);
+
+    return res.status(200).json({
+      status: "Success",
+      msg: `Discount for "${updatedBook.title}" updated to ${discountVal}%.`,
+      data: formatted,
+    });
+  } catch (error) {
+    console.error("Error updating book discount:", error);
+    res.status(500).json({ msg: "Internal server error" });
+  }
+});
+
+// get store settings
+router.get("/store-settings", async (req, res) => {
+  try {
+    const settings = await getStoreSettings();
+    return res.json({
+      status: "Success",
+      data: settings,
+    });
+  } catch (error) {
+    res.status(500).json({ msg: "Internal server error" });
+  }
+});
+
+// update store settings -- admin
+router.put("/update-store-settings", authenticateToken, async (req, res) => {
+  try {
+    const userid = req.headers.id || req.headers.userid;
+    const user = await User.findById(userid);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ msg: "Access declined for normal users." });
+    }
+
+    const { autoRandomDiscount } = req.body;
+    let settings = await StoreSetting.findOne();
+    if (!settings) {
+      settings = new StoreSetting();
+    }
+
+    if (autoRandomDiscount !== undefined) {
+      settings.autoRandomDiscount = Boolean(autoRandomDiscount);
+    }
+    await settings.save();
+
+    return res.status(200).json({
+      status: "Success",
+      msg: settings.autoRandomDiscount
+        ? "Auto-discount mode enabled! Random 5%-35% discounts applied to non-customized items."
+        : "Auto-discount mode disabled. Only admin-assigned discounts are active.",
+      data: settings,
+    });
+  } catch (error) {
+    console.error("Error updating store settings:", error);
+    res.status(500).json({ msg: "Internal server error" });
+  }
+});
+
+//delete book -- admin
+router.delete("/delete-book/:id?", authenticateToken, async (req, res) => {
+  try {
+    const bookid = req.params.id || req.headers.bookid || req.body.bookid;
+    if (!bookid) {
+      return res.status(400).json({ msg: "Book ID is required" });
+    }
     await Book.findByIdAndDelete(bookid);
     res.status(200).json({ msg: "Book deleted successfully." });
   } catch (error) {
@@ -197,10 +351,13 @@ router.delete("/delete-book", authenticateToken, async (req, res) => {
 //get all books
 router.get("/get-all-books", async (req, res) => {
   try {
+    const settings = await getStoreSettings();
     const books = await Book.find({}).sort({ createdAt: -1 });
+    const formattedBooks = books.map((b) => formatBookWithDiscount(b, settings.autoRandomDiscount));
     return res.json({
       status: "Success",
-      data: books,
+      settings,
+      data: formattedBooks,
     });
   } catch (error) {
     res.status(500).json({ msg: "Internal server error" });
@@ -210,10 +367,13 @@ router.get("/get-all-books", async (req, res) => {
 //get recent books limit of 4 to show on homepage
 router.get("/get-recent-books", async (req, res) => {
   try {
+    const settings = await getStoreSettings();
     const books = await Book.find({}).sort({ createdAt: -1 }).limit(4);
+    const formattedBooks = books.map((b) => formatBookWithDiscount(b, settings.autoRandomDiscount));
     return res.json({
       status: "Success",
-      data: books,
+      settings,
+      data: formattedBooks,
     });
   } catch (error) {
     res.status(500).json({ msg: "Internal server error" });
@@ -234,9 +394,13 @@ router.get("/get-book-details/:id", async (req, res) => {
       book = await enrichBookWithExternalData(book);
     }
 
+    const settings = await getStoreSettings();
+    const formatted = formatBookWithDiscount(book, settings.autoRandomDiscount);
+
     return res.json({
       status: "Success",
-      data: book,
+      settings,
+      data: formatted,
     });
   } catch (error) {
     console.error("Error in get-book-details:", error);

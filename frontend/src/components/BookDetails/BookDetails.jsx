@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import Loader from "../Loader/Loader";
@@ -6,24 +6,24 @@ import OptimizedImage from "../Image/OptimizedImage";
 import BookCard from "../BookCard/BookCard";
 import { GrLanguage } from "react-icons/gr";
 import {
-  FaHeart,
   FaShoppingCart,
   FaEdit,
   FaBookOpen,
   FaBuilding,
   FaCalendarAlt,
-  FaBarcode,
   FaStar,
   FaCheck,
   FaBookmark,
-  FaThumbsUp,
-  FaShareAlt,
+  FaTimes,
+  FaArrowLeft,
 } from "react-icons/fa";
 import { MdDeleteOutline } from "react-icons/md";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchBooks } from "../../store/bookSlice";
 import { fetchMyLibrary } from "../../store/librarySlice";
+import { fetchCart } from "../../store/cartSlice";
+import { useModal } from "../../context/ModalContext";
 
 const REACTION_OPTIONS = [
   "💡 Changed how I think",
@@ -40,10 +40,52 @@ const BookDetails = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { id } = useParams();
+  const { showAlert, showConfirm, showAuthModal } = useModal();
 
   const [Data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState("");
+  const [failedImages, setFailedImages] = useState(new Set());
+
+  const handleImageFailed = useCallback((failedUrl) => {
+    if (!failedUrl) return;
+    setFailedImages((prev) => {
+      const next = new Set(prev);
+      next.add(failedUrl);
+      return next;
+    });
+  }, []);
+
+  // Reset failed images when route/book changes
+  useEffect(() => {
+    setFailedImages(new Set());
+  }, [id]);
+
+  const allImages = useMemo(() => {
+    if (!Data) return [];
+    return Array.from(
+      new Set([Data.url, ...(Array.isArray(Data.images) ? Data.images : [])].filter(Boolean))
+    );
+  }, [Data]);
+
+  const validImages = useMemo(() => {
+    return allImages.filter((imgUrl) => !failedImages.has(imgUrl));
+  }, [allImages, failedImages]);
+
+  // Ensure selectedImage always points to a valid image if available
+  useEffect(() => {
+    if (validImages.length > 0) {
+      if (
+        !selectedImage ||
+        failedImages.has(selectedImage) ||
+        !validImages.includes(selectedImage)
+      ) {
+        setSelectedImage(validImages[0]);
+      }
+    } else if (Data?.url && !selectedImage) {
+      setSelectedImage(Data.url);
+    }
+  }, [validImages, selectedImage, failedImages, Data]);
 
   // Reading status & progress state
   const [readingStatus, setReadingStatus] = useState(null); // WANT_TO_READ, CURRENTLY_READING, FINISHED
@@ -69,53 +111,90 @@ const BookDetails = () => {
     bookid: id,
   };
 
-  useEffect(() => {
-    const fetchBookAndReadingData = async () => {
-      try {
-        setLoading(true);
-        // 1. Fetch book details
-        const resp = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-book-details/${id}`);
-        const bookData = resp.data.data;
-        setData(bookData);
+  const fetchBookAndReadingData = useCallback(async () => {
+    try {
+      setLoading(true);
+      // 1. Fetch book details
+      const resp = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/get-book-details/${id}`);
+      const bookData = resp.data.data;
+      setData(bookData);
 
-        if (bookData) {
-          const initialImg = bookData.images && bookData.images.length > 0 ? bookData.images[0] : bookData.url;
-          setSelectedImage(initialImg);
-        }
-
-        // 2. Fetch reviews
-        const revRes = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/reviews/book/${id}`);
-        setReviewsData(revRes.data.data || { reviews: [], avgRating: 0, totalReviews: 0, reactionCounts: {} });
-
-        // 3. Fetch user library status if logged in
-        if (isLoggedIn) {
-          const libRes = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/reading/my-library`, { headers });
-          const rawEntries = libRes.data.raw || [];
-          const match = rawEntries.find((entry) => String(entry.book?._id || entry.book) === String(id));
-          if (match) {
-            setReadingStatus(match.status);
-            setCurrentPage(match.currentPage || 0);
-          } else {
-            setReadingStatus(null);
-          }
-        }
-
-        // 4. Fetch recommendations / similar books
-        const simRes = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/discovery/recommendations`);
-        setSimilarBooks(simRes.data.data || []);
-      } catch (err) {
-        console.error("Error fetching book details page:", err);
-      } finally {
-        setLoading(false);
+      if (bookData) {
+        const initialImg = bookData.images && bookData.images.length > 0 ? bookData.images[0] : bookData.url;
+        setSelectedImage(initialImg);
       }
-    };
-    fetchBookAndReadingData();
+
+      // 2. Fetch reviews
+      const revRes = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/reviews/book/${id}`);
+      setReviewsData(revRes.data.data || { reviews: [], avgRating: 0, totalReviews: 0, reactionCounts: {} });
+
+      // 3. Fetch user library status if logged in
+      if (isLoggedIn) {
+        const libRes = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/reading/my-library`, { headers });
+        const rawEntries = libRes.data.raw || [];
+        const match = rawEntries.find((entry) => String(entry.book?._id || entry.book) === String(id));
+        if (match) {
+          setReadingStatus(match.status);
+          setCurrentPage(match.currentPage || 0);
+        } else {
+          setReadingStatus(null);
+        }
+      }
+
+      // 4. Fetch recommendations / similar books
+      const simRes = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/discovery/recommendations`);
+      setSimilarBooks(simRes.data.data || []);
+    } catch (err) {
+      console.error("Error fetching book details page:", err);
+    } finally {
+      setLoading(false);
+    }
   }, [id, isLoggedIn]);
+
+  useEffect(() => {
+    fetchBookAndReadingData();
+  }, [fetchBookAndReadingData]);
 
   const handleUpdateReadingStatus = async (newStatus) => {
     if (!isLoggedIn) {
-      alert("Please sign in to track your reading.");
-      navigate("/login");
+      showAuthModal({
+        title: "Sign In Required",
+        message: "You must login first to track your reading journey and save books to your library.",
+        proceedText: "Sure, Proceed to login",
+        cancelText: "Keep exploring, login later",
+      });
+      return;
+    }
+
+    // Toggle off / remove if clicking currently active status or explicit remove
+    if (newStatus === readingStatus || newStatus === "REMOVE") {
+      try {
+        setUpdatingProgress(true);
+        await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/reading/status`,
+          {
+            bookId: id,
+            status: "REMOVE",
+          },
+          { headers }
+        );
+        setReadingStatus(null);
+        setCurrentPage(0);
+        dispatch(fetchMyLibrary());
+        showAlert({
+          title: "Tracker Cleared",
+          message: `Removed "${Data?.title || 'Book'}" from your reading tracker.`,
+          type: "info",
+        });
+      } catch (err) {
+        showAlert({
+          title: "Action Failed",
+          message: err.response?.data?.msg || "Failed to remove reading status",
+          type: "error",
+        });
+      } finally {
+        setUpdatingProgress(false);
+      }
       return;
     }
 
@@ -136,9 +215,17 @@ const BookDetails = () => {
         setCurrentPage(Data.pageCount || 300);
       }
       dispatch(fetchMyLibrary());
-      alert(res.data.msg);
+      showAlert({
+        title: "Reading Status Updated",
+        message: res.data.msg || "Status saved to your library.",
+        type: "success",
+      });
     } catch (err) {
-      alert(err.response?.data?.msg || "Failed to update reading status");
+      showAlert({
+        title: "Update Failed",
+        message: err.response?.data?.msg || "Failed to update reading status",
+        type: "error",
+      });
     } finally {
       setUpdatingProgress(false);
     }
@@ -147,10 +234,13 @@ const BookDetails = () => {
   const handleProgressChange = async (newPageVal) => {
     const val = Number(newPageVal);
     setCurrentPage(val);
+    if (!readingStatus) {
+      setReadingStatus("CURRENTLY_READING");
+    }
     if (!isLoggedIn) return;
 
     try {
-      await axios.patch(
+      const res = await axios.patch(
         `${import.meta.env.VITE_BACKEND_URL}/reading/progress`,
         {
           bookId: id,
@@ -158,6 +248,9 @@ const BookDetails = () => {
         },
         { headers }
       );
+      if (res.data?.data?.status) {
+        setReadingStatus(res.data.data.status);
+      }
     } catch (err) {
       console.error("Failed to sync progress:", err);
     }
@@ -174,8 +267,12 @@ const BookDetails = () => {
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (!isLoggedIn) {
-      alert("Please sign in to post a review.");
-      navigate("/login");
+      showAuthModal({
+        title: "Sign In Required",
+        message: "You must login first to post a review and share reader reactions.",
+        proceedText: "Sure, Proceed to login",
+        cancelText: "Keep exploring, login later",
+      });
       return;
     }
 
@@ -191,14 +288,22 @@ const BookDetails = () => {
         },
         { headers }
       );
-      alert(res.data.msg);
+      showAlert({
+        title: "Review Submitted",
+        message: res.data.msg || "Thank you for sharing your reflection!",
+        type: "success",
+      });
       setUserReviewText("");
 
       // Refresh reviews
       const revRes = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/reviews/book/${id}`);
       setReviewsData(revRes.data.data || { reviews: [], avgRating: 0, totalReviews: 0, reactionCounts: {} });
     } catch (err) {
-      alert(err.response?.data?.msg || "Failed to submit review");
+      showAlert({
+        title: "Submission Failed",
+        message: err.response?.data?.msg || "Failed to submit review",
+        type: "error",
+      });
     } finally {
       setSubmittingReview(false);
     }
@@ -206,39 +311,87 @@ const BookDetails = () => {
 
   const addToCart = async () => {
     if (!isLoggedIn) {
-      alert("Please sign in to add books to cart.");
-      navigate("/login");
+      showAuthModal({
+        title: "Sign In Required",
+        message: "You must login first to add books to your shopping cart.",
+        proceedText: "Sure, Proceed to login",
+        cancelText: "Keep exploring, login later",
+      });
       return;
     }
     try {
       const response = await axios.put(`${import.meta.env.VITE_BACKEND_URL}/add-book-to-cart`, {}, { headers });
-      alert(response.data.msg);
+      dispatch(fetchCart());
+      showAlert({
+        title: "Added to Cart",
+        message: response.data.msg || "Book has been added to your basket!",
+        type: "success",
+      });
     } catch (err) {
-      alert(err.response?.data?.msg || "Failed to add to cart");
+      showAlert({
+        title: "Cart Error",
+        message: err.response?.data?.msg || "Failed to add to cart",
+        type: "error",
+      });
     }
   };
 
   const handleBuyNow = async () => {
-    await addToCart();
-    navigate("/cart");
+    if (!isLoggedIn) {
+      showAuthModal({
+        title: "Sign In Required",
+        message: "You must login first to proceed to checkout.",
+        proceedText: "Sure, Proceed to login",
+        cancelText: "Keep exploring, login later",
+      });
+      return;
+    }
+    try {
+      await axios.put(`${import.meta.env.VITE_BACKEND_URL}/add-book-to-cart`, {}, { headers });
+      navigate("/cart");
+    } catch (err) {
+      showAlert({
+        title: "Checkout Error",
+        message: err.response?.data?.msg || "Failed to process item",
+        type: "error",
+      });
+    }
   };
 
   const deleteBook = async () => {
-    if (!window.confirm("Are you sure you want to delete this book?")) return;
-    try {
-      const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/delete-book`, { headers });
-      alert(response.data.msg);
-      dispatch(fetchBooks());
-      navigate("/all-books");
-    } catch (err) {
-      alert(err.response?.data?.msg || "Failed to delete book");
-    }
+    showConfirm({
+      title: "Delete Book",
+      message: `Are you sure you want to permanently delete "${Data?.title}" from the catalog? This action cannot be undone.`,
+      type: "error",
+      confirmText: "Delete Book",
+      cancelText: "Cancel",
+      onConfirm: async () => {
+        try {
+          const response = await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/delete-book`, { headers });
+          showAlert({
+            title: "Book Deleted",
+            message: response.data.msg || "Book removed from catalog.",
+            type: "success",
+            onConfirm: () => {
+              dispatch(fetchBooks());
+              navigate("/all-books");
+            },
+          });
+        } catch (err) {
+          showAlert({
+            title: "Delete Error",
+            message: err.response?.data?.msg || "Failed to delete book",
+            type: "error",
+          });
+        }
+      },
+    });
   };
 
   if (loading) {
     return (
       <div className="h-screen bg-zinc-950 flex items-center justify-center">
-        <Loader />
+        <Loader onRetry={fetchBookAndReadingData} fullScreen />
       </div>
     );
   }
@@ -247,19 +400,31 @@ const BookDetails = () => {
     return (
       <div className="h-screen bg-zinc-950 flex flex-col items-center justify-center text-zinc-100">
         <h2 className="text-3xl font-semibold mb-4">Book Not Found</h2>
-        <Link to="/all-books" className="bg-amber-500 text-zinc-950 px-4 py-2 rounded-xl font-bold">
+        <Link to="/all-books" className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 px-4 py-2 rounded-xl font-bold">
           Back to All Books
         </Link>
       </div>
     );
   }
 
-  const allImages = Array.from(new Set([Data.url, ...(Array.isArray(Data.images) ? Data.images : [])].filter(Boolean)));
+
+
   const totalPageLimit = Data.pageCount || 300;
   const progressPercentage = Math.min(100, Math.round((currentPage / totalPageLimit) * 100));
 
   return (
-    <div className="bg-zinc-950 text-zinc-100 min-h-screen px-4 sm:px-8 lg:px-12 py-8 max-w-7xl mx-auto space-y-12">
+    <div className="bg-zinc-950 text-zinc-100 min-h-screen px-4 sm:px-8 lg:px-12 py-8 max-w-7xl mx-auto space-y-8">
+      {/* Top Back Navigation Bar */}
+      <div>
+        <button
+          onClick={() => navigate(-1)}
+          className="inline-flex items-center gap-2 text-xs font-medium text-zinc-400 hover:text-white bg-zinc-900/60 hover:bg-zinc-900 border border-zinc-800/80 px-4 py-2 rounded-full transition-all duration-200 group"
+        >
+          <FaArrowLeft className="text-[10px] group-hover:-translate-x-0.5 transition-transform" />
+          <span>Back</span>
+        </button>
+      </div>
+
       {/* Upper Grid: Cover + Book Info & Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Image Gallery & Cover (5 cols) */}
@@ -268,7 +433,7 @@ const BookDetails = () => {
             <div className="h-[45vh] lg:h-[52vh] w-full flex items-center justify-center overflow-hidden rounded-2xl">
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={selectedImage || Data.url}
+                  key={selectedImage || "fallback-preview"}
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -276,30 +441,40 @@ const BookDetails = () => {
                   className="w-full h-full"
                 >
                   <OptimizedImage
-                    src={selectedImage || Data.url}
+                    src={selectedImage}
                     alt={Data.title}
                     className="h-full w-full rounded-xl shadow-lg"
                     containerClassName="h-full w-full rounded-xl"
                     objectFit="object-contain"
+                    onError={() => {
+                      if (selectedImage) handleImageFailed(selectedImage);
+                    }}
                   />
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            {/* Thumbnail Selector */}
-            {allImages.length > 1 && (
+            {/* Thumbnail Selector (only valid images) */}
+            {validImages.length > 1 && (
               <div className="flex items-center gap-3 overflow-x-auto mt-4 p-2 bg-zinc-950/60 rounded-xl border border-zinc-800 w-full scrollbar-thin">
-                {allImages.map((imgUrl, index) => {
+                {validImages.map((imgUrl, index) => {
                   const isSelected = selectedImage === imgUrl;
                   return (
                     <button
-                      key={index}
+                      key={imgUrl}
                       onClick={() => setSelectedImage(imgUrl)}
-                      className={`relative flex-shrink-0 w-14 h-18 rounded-lg border-2 overflow-hidden transition-all ${
-                        isSelected ? "border-amber-400 scale-105 shadow-md" : "border-zinc-700 opacity-60 hover:opacity-100"
+                      className={`relative flex-shrink-0 w-14 h-18 rounded-lg border-2 overflow-hidden transition-all cursor-pointer ${
+                        isSelected
+                          ? "border-emerald-400 scale-105 shadow-md shadow-emerald-950/40"
+                          : "border-zinc-700/80 opacity-60 hover:opacity-100 hover:border-zinc-500"
                       }`}
                     >
-                      <OptimizedImage src={imgUrl} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                      <OptimizedImage
+                        src={imgUrl}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover"
+                        onError={() => handleImageFailed(imgUrl)}
+                      />
                     </button>
                   );
                 })}
@@ -314,7 +489,7 @@ const BookDetails = () => {
               <div className="flex gap-2">
                 <Link
                   to={`/update-book/${id}`}
-                  className="bg-zinc-800 hover:bg-zinc-700 text-amber-400 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-zinc-700"
+                  className="bg-zinc-800 hover:bg-zinc-700 text-emerald-400 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-zinc-700"
                 >
                   <FaEdit /> Edit Book
                 </Link>
@@ -335,12 +510,12 @@ const BookDetails = () => {
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-3">
               {Data.genre && (
-                <span className="px-3 py-1 bg-amber-500/10 text-amber-400 font-semibold text-xs rounded-full border border-amber-500/20">
+                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 font-semibold text-xs rounded-full border border-emerald-500/20">
                   {Data.genre}
                 </span>
               )}
               <span className="px-3 py-1 bg-zinc-800 text-zinc-300 text-xs rounded-full flex items-center gap-1">
-                <FaStar className="text-amber-400 text-xs" />
+                <FaStar className="text-emerald-400 text-xs" />
                 {reviewsData.avgRating > 0 ? `${reviewsData.avgRating} / 5` : "New"}
                 <span className="text-zinc-500">({reviewsData.totalReviews} reviews)</span>
               </span>
@@ -354,16 +529,28 @@ const BookDetails = () => {
 
           {/* Reading Tracker Status Selector Card */}
           <div className="bg-gradient-to-r from-zinc-900 via-zinc-900 to-zinc-950 p-5 rounded-2xl border border-zinc-800 shadow-xl space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-2">
-              <FaBookmark /> Personal Reading Tracker
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-2">
+                <FaBookmark /> Personal Reading Tracker
+              </h3>
+              {readingStatus && (
+                <button
+                  onClick={() => handleUpdateReadingStatus("REMOVE")}
+                  className="text-[11px] text-zinc-400 hover:text-red-400 flex items-center gap-1 font-light transition-colors p-1 rounded-lg hover:bg-zinc-800/60"
+                  title="Remove from Reading Tracker"
+                >
+                  <FaTimes className="text-[10px]" /> Clear Tracker
+                </button>
+              )}
+            </div>
 
             <div className="grid grid-cols-3 gap-2">
               <button
                 onClick={() => handleUpdateReadingStatus("WANT_TO_READ")}
+                title={readingStatus === "WANT_TO_READ" ? "Click to deselect / remove" : "Mark as Want to Read"}
                 className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                   readingStatus === "WANT_TO_READ"
-                    ? "bg-amber-500 text-zinc-950 shadow-md shadow-amber-500/20"
+                    ? "bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20"
                     : "bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700"
                 }`}
               >
@@ -372,6 +559,7 @@ const BookDetails = () => {
 
               <button
                 onClick={() => handleUpdateReadingStatus("CURRENTLY_READING")}
+                title={readingStatus === "CURRENTLY_READING" ? "Click to deselect / remove" : "Mark as Currently Reading"}
                 className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                   readingStatus === "CURRENTLY_READING"
                     ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
@@ -383,6 +571,7 @@ const BookDetails = () => {
 
               <button
                 onClick={() => handleUpdateReadingStatus("FINISHED")}
+                title={readingStatus === "FINISHED" ? "Click to deselect / remove" : "Mark as Finished"}
                 className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                   readingStatus === "FINISHED"
                     ? "bg-emerald-500 text-zinc-950 shadow-md shadow-emerald-500/20"
@@ -415,10 +604,26 @@ const BookDetails = () => {
           </div>
 
           {/* E-Commerce Bookstore Purchase Card */}
-          <div className="bg-zinc-900 p-5 rounded-2xl border border-zinc-800 flex items-center justify-between gap-4">
+          <div className="bg-zinc-900 p-5 rounded-2xl border border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <span className="text-[11px] text-zinc-400 block uppercase font-bold tracking-wider">Bookstore Price</span>
-              <span className="text-3xl font-extrabold text-amber-400 font-serif">&#8377; {Data.price}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-zinc-400 block uppercase font-bold tracking-wider">Bookstore Price</span>
+                {Data.hasDiscount && Data.discountPercent > 0 && (
+                  <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold px-2 py-0.5 rounded-full font-mono">
+                    {Data.discountPercent}% OFF
+                  </span>
+                )}
+              </div>
+              <div className="flex items-baseline gap-2 mt-1">
+                <span className="text-3xl font-extrabold text-emerald-400 font-serif">
+                  &#8377; {Data.discountedPrice !== undefined ? Data.discountedPrice : Data.price}
+                </span>
+                {Data.hasDiscount && Data.discountedPrice < Data.price && (
+                  <span className="text-base text-zinc-500 line-through font-mono">
+                    &#8377; {Data.price}
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
@@ -426,12 +631,12 @@ const BookDetails = () => {
                 onClick={addToCart}
                 className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 font-semibold px-4 py-3 rounded-xl text-xs border border-zinc-700 transition-all flex items-center gap-2"
               >
-                <FaShoppingCart className="text-amber-400" />
+                <FaShoppingCart className="text-emerald-400" />
                 <span>Add to Cart</span>
               </button>
               <button
                 onClick={handleBuyNow}
-                className="bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold px-5 py-3 rounded-xl text-xs shadow-lg shadow-amber-500/20 transition-all"
+                className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold px-5 py-3 rounded-xl text-xs shadow-lg shadow-emerald-500/20 transition-all"
               >
                 Buy Now
               </button>
@@ -487,7 +692,7 @@ const BookDetails = () => {
       <section className="bg-zinc-900/60 rounded-3xl border border-zinc-800 p-6 sm:p-8 space-y-8">
         <div>
           <h2 className="text-2xl font-bold font-serif text-white flex items-center gap-2">
-            <FaStar className="text-amber-400" /> Reader Reviews & Reflections
+            <FaStar className="text-emerald-400" /> Reader Reviews & Reflections
           </h2>
           <p className="text-zinc-400 text-sm mt-1">
             See what other readers learned, felt, and thought about this book.
@@ -501,7 +706,7 @@ const BookDetails = () => {
             {Object.entries(reviewsData.reactionCounts).map(([reaction, count]) => (
               <span
                 key={reaction}
-                className="bg-amber-500/10 text-amber-300 border border-amber-500/20 text-xs px-3 py-1 rounded-full font-medium"
+                className="bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 text-xs px-3 py-1 rounded-full font-medium"
               >
                 {reaction} ({count})
               </span>
@@ -522,7 +727,7 @@ const BookDetails = () => {
                 onClick={() => setUserRating(star)}
                 className="text-xl transition-transform hover:scale-125"
               >
-                <FaStar className={star <= userRating ? "text-amber-400" : "text-zinc-700"} />
+                <FaStar className={star <= userRating ? "text-emerald-400" : "text-zinc-700"} />
               </button>
             ))}
           </div>
@@ -539,7 +744,7 @@ const BookDetails = () => {
                     onClick={() => toggleReaction(r)}
                     className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
                       isSelected
-                        ? "bg-amber-500 text-zinc-950 font-bold border-amber-500 shadow-md"
+                        ? "bg-emerald-500 text-zinc-950 font-bold border-emerald-500 shadow-md"
                         : "bg-zinc-900 text-zinc-400 border-zinc-800 hover:text-zinc-200"
                     }`}
                   >
@@ -555,13 +760,13 @@ const BookDetails = () => {
             placeholder="What did you think of this book? (Share your key takeaways or thoughts...)"
             value={userReviewText}
             onChange={(e) => setUserReviewText(e.target.value)}
-            className="w-full bg-zinc-900 text-sm text-zinc-100 placeholder-zinc-500 p-3 rounded-xl border border-zinc-800 focus:outline-none focus:border-amber-500"
+            className="w-full bg-zinc-900 text-sm text-zinc-100 placeholder-zinc-500 p-3 rounded-xl border border-zinc-800 focus:outline-none focus:border-emerald-500"
           />
 
           <button
             type="submit"
             disabled={submittingReview}
-            className="bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all"
+            className="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all"
           >
             {submittingReview ? "Submitting..." : "Submit Review"}
           </button>
@@ -581,7 +786,7 @@ const BookDetails = () => {
                     />
                     <div>
                       <span className="text-sm font-bold text-zinc-200">{rev.user?.username || "Anonymous Reader"}</span>
-                      <div className="flex items-center gap-1 text-xs text-amber-400 mt-0.5">
+                      <div className="flex items-center gap-1 text-xs text-emerald-400 mt-0.5">
                         {[...Array(rev.rating)].map((_, i) => (
                           <FaStar key={i} />
                         ))}
@@ -596,7 +801,7 @@ const BookDetails = () => {
                 {Array.isArray(rev.reactions) && rev.reactions.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 pt-1">
                     {rev.reactions.map((r, idx) => (
-                      <span key={idx} className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[11px] px-2.5 py-0.5 rounded-full font-medium">
+                      <span key={idx} className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] px-2.5 py-0.5 rounded-full font-medium">
                         {r}
                       </span>
                     ))}

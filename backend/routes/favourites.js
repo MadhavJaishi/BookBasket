@@ -38,15 +38,21 @@ router.put(
   },
 );
 
+import { getStoreSettings, formatBookWithDiscount } from "./book.js";
+
 //fetch favourites books
 router.get("/get-all-favourites", authenticateToken, async (req, res) => {
   try {
     const { id } = req.headers;
-    // Since favourites references books, Without populate: You only get ObjectIds for related fields. With populate: You get the full related documents.
+    const settings = await getStoreSettings();
     const data = await User.findById(id).populate("favourites");
+    const formattedFavs = (data.favourites || [])
+      .filter(Boolean)
+      .map((item) => formatBookWithDiscount(item, settings.autoRandomDiscount));
+
     return res.status(200).json({
       status: "Success",
-      data: data.favourites,
+      data: formattedFavs,
     });
   } catch (error) {
     res.status(500).json({ msg: "Internal server error" });

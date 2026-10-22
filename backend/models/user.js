@@ -17,8 +17,21 @@ const user = new Schema(
     },
     address: {
       type: String,
-      required: true,
+      default: "",
     },
+    addresses: [
+      {
+        street: { type: String, default: "" },
+        city: { type: String, default: "" },
+        state: { type: String, default: "" },
+        pinCode: { type: String, default: "" },
+        formattedAddress: { type: String, required: true },
+        lat: { type: Number, default: 0 },
+        lng: { type: Number, default: 0 },
+        isPrimary: { type: Boolean, default: false },
+        label: { type: String, default: "Home" }, // Home, Work, Other
+      },
+    ],
     avatar: {
       type: String,
       default:

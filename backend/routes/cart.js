@@ -41,14 +41,21 @@ router.put(
   },
 );
 
+import { getStoreSettings, formatBookWithDiscount } from "./book.js";
+
 // get cart of a particular user
 router.get("/get-user-cart", authenticateToken, async (req, res) => {
   try {
     const { id } = req.headers;
+    const settings = await getStoreSettings();
     const data = await User.findById(id).populate("cart");
+    const formattedCart = (data.cart || [])
+      .filter(Boolean)
+      .map((item) => formatBookWithDiscount(item, settings.autoRandomDiscount));
+
     return res.status(200).json({
       status: "Success",
-      data: data.cart.reverse(),
+      data: formattedCart.reverse(),
     });
   } catch (error) {
     res.status(500).json({ msg: "Internal server error" });

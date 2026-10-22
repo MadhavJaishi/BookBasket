@@ -22,6 +22,7 @@ const OptimizedImage = ({
   className = "",
   containerClassName = "",
   objectFit = "object-contain",
+  onError,
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -40,6 +41,9 @@ const OptimizedImage = ({
     } else {
       setHasError(true);
       setIsLoaded(true);
+      if (onError) {
+        onError(src);
+      }
     }
   };
 

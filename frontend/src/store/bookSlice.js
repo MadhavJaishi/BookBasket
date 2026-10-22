@@ -27,7 +27,7 @@ const BooksSlice = createSlice({
     loading: false,
     error: null,
   },
-  builder: (builder) => {
+  extraReducers: (builder) => {
     builder
       .addCase(fetchBooks.pending, (state) => {
         state.loading = true;

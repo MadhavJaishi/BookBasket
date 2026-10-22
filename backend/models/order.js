@@ -13,6 +13,10 @@ const order = new Schema({
         type: String,
         default: "Order placed",
         enum: ["Order placed", "Out for delivery", "Delivered", "Cancelled"]
+    },
+    shippingAddress: {
+        type: String,
+        default: ""
     }
 }, {timestamps: true})
 export default model("order", order)
