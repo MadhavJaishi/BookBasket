@@ -16,6 +16,12 @@ import {
   FaDiamondTurnRight,
   FaClock,
   FaBuilding,
+  FaHeart,
+  FaShieldHeart,
+  FaGem,
+  FaCommentDots,
+  FaBookOpenReader,
+  FaCircleCheck,
 } from "react-icons/fa6";
 
 // Individual Word that fades from full opacity (1.0) to dim (0.15) sequentially from top-left to bottom-right
@@ -253,6 +259,144 @@ const OfficeMapSection = () => {
   );
 };
 
+const BrandStorySection = () => {
+  const storyPillars = [
+    {
+      icon: FaBookOpenReader,
+      tag: "Made by Book Lovers",
+      title: "For Book Lovers, by Book Lovers",
+      description:
+        "We are passionate readers ourselves, and we intimately understand what makes finding and owning a great book so special. We know the anticipation of an unread spine, the comfort of losing yourself in a new world, and the joy of finding words that stay with you forever. Our mission is to provide the warmest, most thoughtful experience for every single reader who steps into Bookbasket.",
+      highlight: "Crafted by readers who share your deep reverence for stories.",
+    },
+    {
+      icon: FaShieldHeart,
+      tag: "Uncompromising Integrity",
+      title: "Authentic Books You Can Trust",
+      description:
+        "We know that for true book lovers, building a personal library is a labor of love, memory, and pride. That is why authenticity is at the very heart of everything we do. We are committed to offering only genuine, publisher-original books — never unauthorized copies, shoddy reprints, or counterfeits. When you acquire a book here, you can trust that it is an authentic keepsake built to last for generations.",
+      highlight: "100% genuine, original editions worthy of your shelves.",
+    },
+    {
+      icon: FaGem,
+      tag: "Curated with Care",
+      title: "A Collection Worth Exploring",
+      description:
+        "We believe browsing for books should ignite genuine excitement. Whether you are on the hunt for your next favorite read, tracking down an elusive special edition, or finally securing a cherished book you have always wanted to own, our shelves are carefully curated to offer volumes that inspire, intrigue, and reward curious minds.",
+      highlight: "Treasured discoveries, special editions, and timeless favorites.",
+    },
+    {
+      icon: FaCommentDots,
+      tag: "A Living Community",
+      title: "More Than Just a Bookstore",
+      description:
+        "Bookbasket aims to be a welcoming sanctuary where hardcore bibliophiles, casual readers, passionate collectors, and literary explorers can connect with people who share their taste. Discover new books, exchange heartfelt recommendations, debate your favorite authors and genres, share honest opinions, make friends with kindred spirits, and feel like you truly belong to a community that understands your love for reading.",
+      highlight: "Connecting readers, sparking discussions, and finding your tribe.",
+    },
+  ];
+
+  return (
+    <section className="max-w-7xl mx-auto px-4 sm:px-8 lg:px-12 py-16 space-y-12">
+      {/* Section Header */}
+      <div className="max-w-3xl space-y-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-medium tracking-widest text-emerald-400 uppercase">
+          <FaHeart className="w-2.5 h-2.5 text-emerald-400" />
+          <span>Our Story & Brand Purpose</span>
+        </div>
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif text-white font-normal leading-tight">
+          Built by Book Lovers, <br className="hidden sm:inline" />
+          <span className="italic font-light text-emerald-400">for Book Lovers.</span>
+        </h2>
+        <p className="text-zinc-400 font-light text-base sm:text-lg leading-relaxed">
+          At Bookbasket, we understand that books are so much more than just products — they are transformative experiences, cherished memories, lifelong passions, and treasures worth collecting.
+        </p>
+      </div>
+
+      {/* Featured Manifesto Card */}
+      <div className="relative rounded-3xl p-8 sm:p-12 overflow-hidden bg-gradient-to-br from-zinc-900/90 via-zinc-900/50 to-emerald-950/30 border border-zinc-800/90 shadow-2xl">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[100px] pointer-events-none" />
+        <div className="relative z-10 max-w-4xl space-y-6">
+          <div className="inline-flex items-center gap-2 text-xs font-light text-emerald-400 tracking-wider uppercase">
+            <FaCircleCheck className="text-emerald-400 text-xs" />
+            <span>Our Core Commitment</span>
+          </div>
+          <blockquote className="text-xl sm:text-2xl md:text-3xl font-serif text-zinc-100 font-light leading-snug">
+            &ldquo;Bookbasket is not just about buying books; it is about celebrating the love of reading, collecting authentic books, and bringing book lovers together.&rdquo;
+          </blockquote>
+          <p className="text-zinc-400 font-light text-sm sm:text-base leading-relaxed max-w-2xl">
+            Whether you are lovingly curating your personal library, discovering a new author who alters your worldview, or searching for fellow readers who understand your devotion to the written word, Bookbasket is honored to be part of your reading journey.
+          </p>
+        </div>
+      </div>
+
+      {/* 4 Story Pillars Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+        {storyPillars.map((pillar, index) => {
+          const Icon = pillar.icon;
+          return (
+            <div
+              key={index}
+              className="group relative bg-zinc-900/40 hover:bg-zinc-900/70 border border-zinc-800/80 hover:border-emerald-500/30 p-7 sm:p-9 rounded-3xl transition-all duration-300 flex flex-col justify-between space-y-6"
+            >
+              <div className="space-y-5">
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xl group-hover:scale-105 group-hover:bg-emerald-500/15 transition-all">
+                    <Icon />
+                  </div>
+                  <span className="text-[11px] font-medium uppercase tracking-wider text-emerald-400/90 bg-emerald-500/5 px-3 py-1 rounded-full border border-emerald-500/15">
+                    {pillar.tag}
+                  </span>
+                </div>
+
+                <div className="space-y-2.5">
+                  <h3 className="text-2xl font-serif text-white font-normal group-hover:text-emerald-300 transition-colors">
+                    {pillar.title}
+                  </h3>
+                  <p className="text-zinc-400 font-light text-sm leading-relaxed">
+                    {pillar.description}
+                  </p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-zinc-800/60 flex items-center gap-2 text-xs text-zinc-400 font-light">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                <span>{pillar.highlight}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Community Connection Banner */}
+      <div className="rounded-3xl p-8 sm:p-10 bg-zinc-900/50 border border-zinc-800/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="space-y-2 max-w-2xl">
+          <h4 className="text-2xl font-serif text-white font-normal">
+            Find Your Tribe in Our Community
+          </h4>
+          <p className="text-zinc-400 font-light text-sm leading-relaxed">
+            Share your reading reflections, exchange recommendations with readers who love what you love, and celebrate stories together.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <Link
+            to="/community"
+            className="flex items-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-medium px-6 py-3 rounded-full text-xs sm:text-sm transition-all shadow-md shadow-emerald-950/40 active:scale-95 cursor-pointer"
+          >
+            <span>Join Our Community</span>
+            <FaArrowRight className="text-[10px]" />
+          </Link>
+          <Link
+            to="/all-books"
+            className="flex items-center gap-2 bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 px-6 py-3 rounded-full text-xs sm:text-sm font-light transition-all border border-zinc-700/60 active:scale-95 cursor-pointer"
+          >
+            <span>Explore Authentic Books</span>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+};
+
 const AboutUs = () => {
   const { scrollY } = useScroll();
 
@@ -355,6 +499,9 @@ const AboutUs = () => {
           </div>
         </div>
       </section>
+
+      {/* Brand Story & Key Messages Section */}
+      <BrandStorySection />
 
       {/* Office & Headquarters Map Section */}
       <OfficeMapSection />
